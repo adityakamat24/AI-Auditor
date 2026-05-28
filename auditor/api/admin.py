@@ -275,17 +275,27 @@ async def reset_demo_data(
     from auditor.db.session import get_sessionmaker
 
     # Single TRUNCATE ... CASCADE: Postgres handles FK ordering atomically in one statement.
-    targets = [
+    # Filter to tables that actually exist in this deployment — memory_embeddings is skipped
+    # when pgvector is unavailable (Fly Postgres doesn't ship the extension), and listing a
+    # non-existent table in the TRUNCATE makes Postgres reject the whole statement.
+    wanted = [
         "incident_action_items", "incident_comments", "incidents",
         "hitl_decisions", "shadow_verdicts", "verdicts", "flags",
         "sampler_decisions", "audit_log",
         "memory_embeddings", "memory_entries",
         "events", "runs",
     ]
-    stmt = f"TRUNCATE TABLE {', '.join(targets)} RESTART IDENTITY CASCADE"
     sessionmaker = get_sessionmaker()
     async with sessionmaker() as session, session.begin():
-        await session.execute(sql_text(stmt))
+        existing_rows = await session.execute(
+            sql_text("SELECT tablename FROM pg_tables WHERE schemaname = 'public'")
+        )
+        existing = {row[0] for row in existing_rows}
+        targets = [t for t in wanted if t in existing]
+        if targets:
+            await session.execute(
+                sql_text(f"TRUNCATE TABLE {', '.join(targets)} RESTART IDENTITY CASCADE")
+            )
 
     logger.info("admin.reset wiped=%d by=%s", len(targets), claims.get("sub") if claims else "?")
     return {"wiped": targets}
