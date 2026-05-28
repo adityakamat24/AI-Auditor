@@ -62,18 +62,36 @@ async def live() -> dict:
 
 @router.get("/health")
 async def health(request: Request, response: Response) -> dict:
-    probes = {
+    # Critical: a down state for these flips /health to 503 (Fly / k8s / load balancer signal).
+    critical = {
         "postgres": probe_postgres,
         "redis": probe_redis,
-        "minio": probe_minio,
         "opa": probe_opa,
     }
-    results = await asyncio.gather(*(probe(request) for probe in probes.values()))
+    # Optional: MinIO holds forensic blobs; the auditor + UI run fine without it (the cloud
+    # demo container intentionally doesn't ship it). Reported in the body but never flips status.
+    optional = {
+        "minio": probe_minio,
+    }
+
+    crit_results = await asyncio.gather(*(p(request) for p in critical.values()))
+    opt_results = await asyncio.gather(*(p(request) for p in optional.values()))
+
     services: dict[str, dict] = {}
-    all_ok = True
-    for name, (ok, detail) in zip(probes, results, strict=True):
-        services[name] = {"ok": ok, "detail": detail}
-        all_ok = all_ok and ok
-    if not all_ok:
+    all_critical_ok = True
+    any_optional_down = False
+    for name, (ok, detail) in zip(critical, crit_results, strict=True):
+        services[name] = {"ok": ok, "detail": detail, "required": True}
+        all_critical_ok = all_critical_ok and ok
+    for name, (ok, detail) in zip(optional, opt_results, strict=True):
+        services[name] = {"ok": ok, "detail": detail, "required": False}
+        any_optional_down = any_optional_down or not ok
+
+    if not all_critical_ok:
         response.status_code = 503
-    return {"status": "ok" if all_ok else "degraded", "version": __version__, "services": services}
+        status = "degraded"
+    elif any_optional_down:
+        status = "ok-optional-down"
+    else:
+        status = "ok"
+    return {"status": status, "version": __version__, "services": services}

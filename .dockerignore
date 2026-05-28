@@ -1,4 +1,5 @@
 .git/
+.gitignore
 .venv/
 venv/
 __pycache__/
@@ -16,4 +17,15 @@ node_modules/
 hitl_ui/frontend/dist/
 involuntary/linux_ebpf/target/
 tasks/
+tests/
+.run/
 *.md
+!README.md
+docs/
+.github/
+docker-compose.yml
+docker-compose.override.example.yml
+*.bat
+make.ps1
+Makefile
+setup.bat

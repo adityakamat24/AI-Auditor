@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import redis.asyncio as aioredis
-from fastapi import FastAPI, Response
+from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from minio import Minio
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
@@ -172,13 +172,46 @@ def create_app() -> FastAPI:
     app.include_router(shadow_router)
     app.include_router(agent_router)
 
-    @app.get("/")
-    async def root() -> dict:
+    @app.get("/__service")
+    async def service_info() -> dict:
         return {"service": "ai-auditor", "version": __version__}
 
     @app.get("/metrics")
     async def metrics() -> Response:
         return Response(content=generate_latest(), media_type=CONTENT_TYPE_LATEST)
+
+    # Serve the React UI from the same origin when a production build is present. The container
+    # build runs `npm run build` and drops dist/ here so a single Fly.io app hosts both API and
+    # UI. On a fresh local clone with no UI build, this mount is silently skipped and the dev
+    # workflow (Vite on :5173 -> auditor on :8000) continues to work.
+    import pathlib
+
+    from fastapi.responses import FileResponse
+    from fastapi.staticfiles import StaticFiles
+
+    ui_dist = pathlib.Path(__file__).resolve().parent.parent / "hitl_ui" / "frontend" / "dist"
+    ui_index = ui_dist / "index.html"
+
+    if ui_dist.is_dir() and ui_index.is_file():
+        # The SPA and the API share URL paths (`/incidents`, `/settings`, ...). Distinguish browser
+        # navigation from XHR/fetch by the Accept header: browsers send `text/html,...`; fetch()
+        # defaults to `*/*`. When an API router returns 401/403/404 AND the client wanted HTML, we
+        # swap the response for the SPA's index.html so react-router can render the right page
+        # (which then makes its own fetch calls under the same paths - those fetches lack the
+        # text/html Accept and so receive the original JSON error).
+        @app.middleware("http")
+        async def spa_html_fallback(request: Request, call_next):  # type: ignore[no-untyped-def]
+            response = await call_next(request)
+            if response.status_code in (401, 403, 404):
+                accept = request.headers.get("accept", "")
+                if "text/html" in accept:
+                    return FileResponse(str(ui_index))
+            return response
+
+        # Catch-all static mount for everything else (assets, /favicon.ico, etc.). Order matters:
+        # this is added LAST so all routers + middleware sit in front of it.
+        app.mount("/", StaticFiles(directory=str(ui_dist), html=True), name="ui")
+        log.info("auditor.ui_mounted", path=str(ui_dist))
 
     return app
 

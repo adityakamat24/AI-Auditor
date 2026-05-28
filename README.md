@@ -112,6 +112,51 @@ Grafana is at `http://localhost:3000` (admin / admin). Prometheus at `http://loc
 
 ---
 
+## Cloud demo (Fly.io)
+
+For a public live demo where a stakeholder can click around the UI themselves, the repo ships a single-image Fly.io deployment. One Docker container bundles the auditor + UI + OPA + an in-container Redis; an external Fly Postgres holds state. UI is served same-origin from the auditor on `:8000` so there is no CORS coordination and no separate static host.
+
+**Prerequisites**
+
+- Fly.io account, [`fly` CLI](https://fly.io/docs/flyctl/install/) installed and authenticated (`fly auth login`).
+- Docker installed locally (Fly's remote builder is also fine - it builds in the cloud).
+
+**One-time setup**
+
+```bash
+# 1. Provision the app (accept the existing fly.toml; do NOT auto-deploy yet)
+fly launch --copy-config --no-deploy --name ai-auditor
+
+# 2. Managed Postgres + attach it (fly populates DATABASE_URL on the app)
+fly postgres create --name ai-auditor-db --region ord --vm-size shared-cpu-1x --volume-size 1
+fly postgres attach ai-auditor-db --app ai-auditor
+
+# 3. Convert DATABASE_URL to the asyncpg DSN the auditor expects, and set a JWT secret
+fly ssh console -a ai-auditor -C "printenv DATABASE_URL"   # copy the value
+# Replace `postgres://` with `postgresql+asyncpg://` and set as POSTGRES_DSN:
+fly secrets set -a ai-auditor POSTGRES_DSN="postgresql+asyncpg://<...>"
+fly secrets set -a ai-auditor JWT_SECRET="$(openssl rand -hex 32)"
+
+# 4. (Optional) live LLM judge - omit to use the deterministic offline stub
+fly secrets set -a ai-auditor ANTHROPIC_API_KEY="sk-ant-..."
+
+# 5. Deploy
+fly deploy --remote-only
+```
+
+The first deploy takes ~5 minutes (image build + Postgres provisioning). Subsequent deploys are ~60 seconds because the layer cache holds. `fly open` opens the public HTTPS URL. Sign in with `admin@demo.local` / any password.
+
+**Things to know**
+
+- `auto_stop_machines = "stop"` in `fly.toml` puts the machine to sleep when idle and wakes on the first request. Cold-start is ~3-4 seconds. Comment it out if you want the demo persistently warm (and pay for it).
+- The container has no Sysmon/eBPF backend, so the involuntary-divergence detector is silent on Fly. The other ten detectors + the judge still fire. The voluntary telemetry channel and the inline gate behave identically to the local demo.
+- Demo sandbox files (`notes.txt`, `secrets.txt`, `kb_article.txt`) are written on every container boot by `scripts/cloud/start.sh` so the canned attack prompts in the SYSTEM_OVERVIEW demo flow stay reproducible across deploys.
+- To reset between demos: click **Settings -> Reset session data** in the UI, or `fly ssh console -a ai-auditor -C "python scripts/wipe_run_data.py"`.
+
+**Cost expectation:** ~$5/mo at the listed VM size with `auto_stop_machines` on; ~$15/mo persistently warm. Fly Postgres on `shared-cpu-1x` + 1GB volume is ~$2/mo extra.
+
+---
+
 ## Running Tests
 
 ```powershell

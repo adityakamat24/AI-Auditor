@@ -2,7 +2,12 @@
 /**
  * Typed API client for the AI Auditor HITL backend (§10.2).
  *
- * Base URL is read from VITE_API_BASE (defaults to http://localhost:8000).
+ * Base URL is read from VITE_API_BASE. Default behaviour:
+ *   - dev (Vite dev server on :5173) - falls back to http://localhost:8000 so the dev workflow
+ *     works without configuration.
+ *   - prod build (UI served from the auditor at the same origin) - falls back to "" so all
+ *     requests use relative paths and hit whatever host the page was loaded from. This is what
+ *     the Fly.io / single-origin deployment relies on.
  * A Bearer token is attached automatically from AuthContext / localStorage.
  */
 
@@ -21,7 +26,14 @@ import type {
   SimilarIncident,
 } from "../types";
 
-const BASE = (import.meta.env.VITE_API_BASE as string | undefined) ?? "http://localhost:8000";
+const BASE = (() => {
+  const explicit = import.meta.env.VITE_API_BASE as string | undefined;
+  if (explicit !== undefined) return explicit; // honour explicit empty string too
+  // Vite dev mode runs the UI on :5173 and the auditor on :8000 - point at the auditor.
+  if (import.meta.env.DEV) return "http://localhost:8000";
+  // Production build (served from the auditor itself): same-origin, use relative paths.
+  return "";
+})();
 
 function getToken(): string | null {
   return localStorage.getItem("hitl_token");
@@ -291,7 +303,16 @@ export function getShadowVerdicts(filters: ShadowVerdictFilters = {}): Promise<S
 
 // ─── WebSocket helper ─────────────────────────────────────────────────────────
 
-const WS_BASE = BASE.replace(/^http/, "ws");
+/**
+ * WebSocket base URL. Mirrors BASE: when BASE is absolute (dev), swap http(s) for ws(s).
+ * When BASE is "" (prod / same-origin), derive ws(s)://<location.host> from the current page.
+ */
+const WS_BASE = (() => {
+  if (BASE) return BASE.replace(/^http/, "ws");
+  if (typeof window === "undefined") return ""; // SSR safety - never actually hit in this app
+  const proto = window.location.protocol === "https:" ? "wss:" : "ws:";
+  return `${proto}//${window.location.host}`;
+})();
 
 export interface FlagWsMessage {
   type: "flag_created" | "flag_updated";
