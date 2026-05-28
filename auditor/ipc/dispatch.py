@@ -34,16 +34,48 @@ class GateDispatcher:
         self.pii = pii
         self.budget = budget
         self._audits: set[asyncio.Task] = set()  # keep refs to background audit tasks (avoid GC)
+        # Run IDs we've already upserted - avoids hammering the DB with the same
+        # INSERT...ON CONFLICT on every event of a long run.
+        self._known_runs: set[str] = set()
 
     async def on_connect(self, identity: PeerIdentity | None) -> None:
         if identity is None:
             return
         await upsert_run(UUID(identity.run_id), UUID(identity.tenant_id))
+        self._known_runs.add(identity.run_id)
         log.info("ipc.run_connected", run_id=identity.run_id, role=identity.role)
+
+    async def _ensure_run_row(self, run_id: str | None, tenant_id: str | None) -> None:
+        """Lazily upsert the ``runs`` row when we see an event for a run we don't know yet.
+
+        The mTLS path creates the row from the cert SAN in :meth:`on_connect`. When mTLS is off
+        (single-container cloud deploy on a Unix socket), no SAN is available and ``on_connect``
+        is a no-op - so the first event would FK-fail against the missing ``runs`` row. This is
+        the lazy-creation fallback.
+        """
+        if not run_id or not tenant_id or run_id in self._known_runs:
+            return
+        try:
+            await upsert_run(UUID(run_id), UUID(tenant_id))
+            self._known_runs.add(run_id)
+            log.info("ipc.run_upserted_lazy", run_id=run_id)
+        except Exception as exc:  # noqa: BLE001 - non-fatal; the event store call below will surface a real error
+            log.warning("ipc.run_upsert_failed", run_id=run_id, error=str(exc))
 
     async def on_disconnect(self, identity: PeerIdentity | None) -> None:
         """Run ended: mark it completed and schedule the off-hot-path audit (sampler → detectors → flag)."""
+        # mTLS path: identity has the run_id directly. Cloud / no-mTLS path: identity is None,
+        # so fall back to the most recently lazy-upserted run on this connection. We can't tie a
+        # specific harness disconnect to a run without mTLS, so we audit every still-pending run
+        # at disconnect by iterating the cache (typically a single run per harness subprocess).
         if identity is None:
+            for run_id_str in list(self._known_runs):
+                # We need a tenant_id; resolve it from the runs table by re-upserting (no-op) and
+                # using the dummy tenant we don't have - so just dispatch the audit without
+                # touching tenant scoping at the dispatcher layer. The audit pipeline reads tenant
+                # from the runs row itself.
+                self._spawn_run_audit(UUID(run_id_str))
+                self._known_runs.discard(run_id_str)
             return
         run_id, tenant_id = UUID(identity.run_id), UUID(identity.tenant_id)
         try:
@@ -52,6 +84,36 @@ class GateDispatcher:
             log.warning("ipc.run_complete_failed", run_id=identity.run_id, error=str(exc))
         # Fire-and-forget: the audit (detectors + judge) runs after the connection is torn down.
         task = asyncio.create_task(self._audit(run_id, tenant_id))
+        self._audits.add(task)
+        task.add_done_callback(self._audits.discard)
+
+    def _spawn_run_audit(self, run_id: UUID) -> None:
+        """Schedule the no-identity audit path: tenant comes from the persisted runs row."""
+
+        async def _runner() -> None:
+            from auditor.db.session import get_sessionmaker
+            from sqlalchemy import text as _sa_text
+
+            try:
+                sm = get_sessionmaker()
+                async with sm() as ses:
+                    row = (await ses.execute(
+                        _sa_text("SELECT tenant_id FROM runs WHERE run_id = :rid"),
+                        {"rid": str(run_id)},
+                    )).first()
+                if not row:
+                    log.warning("ipc.audit_no_run_row", run_id=str(run_id))
+                    return
+                tenant_id = UUID(str(row[0]))
+                try:
+                    await mark_run_completed(run_id)
+                except Exception as exc:  # noqa: BLE001
+                    log.warning("ipc.run_complete_failed", run_id=str(run_id), error=str(exc))
+                await self._audit(run_id, tenant_id)
+            except Exception as exc:  # noqa: BLE001 - audit is best-effort
+                log.warning("ipc.audit_lazy_failed", run_id=str(run_id), error=str(exc))
+
+        task = asyncio.create_task(_runner())
         self._audits.add(task)
         task.add_done_callback(self._audits.discard)
 
@@ -82,6 +144,7 @@ class GateDispatcher:
 
     async def _store(self, ev: Event) -> None:
         event_dict = event_to_dict(ev)
+        await self._ensure_run_row(event_dict.get("run_id"), event_dict.get("tenant_id"))
         try:
             await store_event(event_dict, event_ts(ev))
         except Exception as exc:  # noqa: BLE001 - never let storage break the channel
@@ -100,6 +163,7 @@ class GateDispatcher:
     async def _gate(self, ev: Event) -> Frame:
         event_dict = event_to_dict(ev)
         run_id = event_dict.get("run_id")
+        await self._ensure_run_row(run_id, event_dict.get("tenant_id"))
         event_id = None
         try:
             event_id = await store_event(event_dict, event_ts(ev))

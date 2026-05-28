@@ -76,9 +76,15 @@ def _spawn_harness(task: str, max_turns: int, tenant_id: UUID) -> dict:
         "HARNESS_CA": str(ca),
         "HARNESS_RUN_ID": run_id,
         "HARNESS_TENANT_ID": str(tenant_id),
-        "IPC_MTLS_ENABLED": "true",
         "GATE_TIMEOUT_MS": "500",
     })
+    # Inherit the parent's IPC_MTLS_ENABLED. The local-dev path sets it to "true" via
+    # start_all.ps1 (the auditor listens on TLS-wrapped loopback TCP), so the harness uses mTLS.
+    # The cloud single-container path leaves it "false" (auditor listens on a plain Unix socket),
+    # so the harness sends plain frames. Forcing "true" here breaks the cloud path: the harness
+    # sends TLS handshake bytes into the plain socket and the auditor reads them as a malformed
+    # 369MB frame, disconnecting the harness. Don't override the parent.
+    env.setdefault("IPC_MTLS_ENABLED", os.environ.get("IPC_MTLS_ENABLED", "false"))
 
     log_path = _RUN_LOG_DIR / f"{run_id}.log"
     log_handle = log_path.open("w", encoding="utf-8", errors="replace")

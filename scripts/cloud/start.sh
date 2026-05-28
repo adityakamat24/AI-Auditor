@@ -6,6 +6,24 @@
 # seeds demo data, and finally execs uvicorn so the auditor takes PID 1 (via tini).
 set -euo pipefail
 
+# Fly Postgres attach sets DATABASE_URL in the form
+#   postgres://user:pass@host:5432/dbname?sslmode=disable
+# The auditor expects POSTGRES_DSN with the asyncpg scheme, and asyncpg doesn't understand the
+# psycopg2 `sslmode=` query param (it uses `ssl=` instead). We're connecting to Fly Postgres over
+# the private flycast network where TLS isn't applied anyway, so the safest move is to strip the
+# query string entirely. Honours an explicit POSTGRES_DSN if it's already set.
+if [ -z "${POSTGRES_DSN:-}" ] && [ -n "${DATABASE_URL:-}" ]; then
+    DSN="${DATABASE_URL}"
+    DSN="${DSN/postgresql:\/\//postgresql+asyncpg:\/\/}"
+    DSN="${DSN/postgres:\/\//postgresql+asyncpg:\/\/}"
+    # asyncpg's URL param is `ssl=`, not `sslmode=`. With sslmode= asyncpg ignores the override
+    # and tries TLS by default; against Fly Postgres (no TLS on the internal flycast network)
+    # the handshake fails with ConnectionResetError. Rename so asyncpg disables TLS explicitly.
+    DSN="${DSN/sslmode=/ssl=}"
+    export POSTGRES_DSN="$DSN"
+    echo "==> POSTGRES_DSN derived from DATABASE_URL"
+fi
+
 echo "==> starting in-container redis"
 redis-server --daemonize yes --port 6379 --bind 127.0.0.1 --save "" --appendonly no
 
@@ -29,6 +47,9 @@ done
 
 echo "==> seeding demo tenant + admin (idempotent)"
 python scripts/seed_demo.py || echo "  (seed_demo non-fatal failure - probably already seeded)"
+
+# Note: sampler mode/rate now come from the SAMPLER_MODE / SAMPLER_RATE env vars (see fly.toml).
+# runtime_policy._initial_settings() reads them at module load. No SQL override needed.
 
 # Refresh demo sandbox files on every boot so the canned attack prompts stay reproducible.
 echo "==> writing demo sandbox files"

@@ -252,15 +252,85 @@ def _default_live_cache() -> object:
     return _DEFAULT_LIVE_CACHE
 
 
+class AnthropicJudge(JudgeClient):
+    """Live judge that calls Anthropic's Messages API directly (no LiteLLM proxy needed).
+
+    Used in the single-container cloud deploy where running a sidecar LiteLLM proxy is overkill.
+    Matches LiteLLMJudge's contract: returns ``JudgeResult`` with ``verdict``, ``confidence``,
+    ``evidence`` etc.; any network/parse failure degrades to ``NEEDS_REVIEW abstain`` so the
+    orchestrator routes the run to a human rather than silent-OK.
+    """
+
+    def __init__(self, settings: Settings) -> None:
+        self.settings = settings
+        self.model = settings.judge_model
+        self.crosscheck_model = settings.agent_model
+        self.api_key = settings.anthropic_api_key
+        self.timeout_s = 30.0
+
+    async def judge(
+        self, *, category: str, rubric: str, trace_slice: str, prompt_version: int = 1
+    ) -> JudgeResult:
+        result = await self._call(self.model, category, rubric, trace_slice, prompt_version)
+        if result.abstain and self.crosscheck_model and self.crosscheck_model != self.model:
+            escalated = await self._call(
+                self.crosscheck_model, category, rubric, trace_slice, prompt_version
+            )
+            if not escalated.abstain:
+                return escalated
+        return result
+
+    async def _call(
+        self, model: str, category: str, rubric: str, trace_slice: str, prompt_version: int
+    ) -> JudgeResult:
+        from anthropic import AsyncAnthropic
+
+        user = (
+            f"ASI category under review: {category}\n\n"
+            f"Trace slice:\n<<<\n{trace_slice}\n>>>\n\n{_JUDGE_INSTRUCTIONS}"
+        )
+        try:
+            client = AsyncAnthropic(api_key=self.api_key, timeout=self.timeout_s)
+            resp = await client.messages.create(
+                model=model,
+                max_tokens=1024,
+                temperature=0,
+                system=rubric,
+                messages=[{"role": "user", "content": user}],
+            )
+            content_parts = [b.text for b in resp.content if getattr(b, "type", None) == "text"]
+            content = "".join(content_parts) if content_parts else ""
+            return self._parse(content, category, model, prompt_version)
+        except Exception as exc:  # noqa: BLE001 - degrade to abstain, never silently OK
+            return JudgeResult(
+                category=category, verdict="NEEDS_REVIEW", confidence=0.0,
+                abstain=True, abstain_reason=f"judge call failed: {type(exc).__name__}: {exc}",
+                model=model, prompt_version=prompt_version,
+            )
+
+    # Reuse the parser from LiteLLMJudge - the response format is the same JSON object.
+    _parse = LiteLLMJudge._parse
+
+
 def get_judge(settings: Settings | None = None, *, cache: object | None = None) -> JudgeClient:
     """Return the live judge when an Anthropic key is configured, else the offline stub.
 
-    Pass ``cache`` (a VerdictCache) to wrap the judge in a read-through cache. When the live judge is
-    selected and no explicit cache is given, a process-wide in-memory cache dedupes calls (§9.8). The
-    offline stub is left uncached - it is pure and free, so caching would only add cross-test coupling.
+    Routing:
+      - No key → :class:`OfflineStubJudge` (deterministic, no network).
+      - Key + ``LITELLM_BASE_URL`` set → :class:`LiteLLMJudge` (local-dev path).
+      - Key + ``LITELLM_BASE_URL`` empty → :class:`AnthropicJudge` (cloud single-container path,
+        no proxy to run).
+
+    Pass ``cache`` (a VerdictCache) to wrap the judge in a read-through cache. When a live judge is
+    selected and no explicit cache is given, a process-wide in-memory cache dedupes calls (§9.8).
     """
     settings = settings or get_settings()
-    base: JudgeClient = LiteLLMJudge(settings) if settings.judge_live else OfflineStubJudge()
+    if not settings.judge_live:
+        base: JudgeClient = OfflineStubJudge()
+    elif (settings.litellm_base_url or "").strip():
+        base = LiteLLMJudge(settings)
+    else:
+        base = AnthropicJudge(settings)
     if cache is None and settings.judge_live:
         cache = _default_live_cache()
     return CachedJudge(base, cache) if cache is not None else base

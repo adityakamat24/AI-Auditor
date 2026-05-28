@@ -49,7 +49,16 @@ _API_WRITABLE_FK_TABLES: tuple[str, ...] = (
 
 
 def upgrade() -> None:
+    # Skip tables that don't exist (0001 may have skipped memory_embeddings when pgvector wasn't
+    # available on the host). Without this guard the GRANT raises UndefinedTableError.
+    from sqlalchemy import text as _sa_text
+    bind = op.get_bind()
+    existing: set[str] = {row[0] for row in bind.execute(
+        _sa_text("SELECT tablename FROM pg_tables WHERE schemaname = 'public'")
+    )}
     for table in _API_WRITABLE_FK_TABLES:
+        if table not in existing:
+            continue
         # Allow DML - 0002 only granted SELECT.
         op.execute(f'GRANT INSERT, UPDATE, DELETE ON "{table}" TO {_API_ROLE}')
         # 0001 enabled RLS uniformly. Since no policy is defined for these tables, default-deny

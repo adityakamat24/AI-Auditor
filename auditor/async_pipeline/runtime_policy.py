@@ -40,7 +40,31 @@ class SamplerSettings:
 
 # Process-wide mutable state. Audit decisions read from these.
 _state_lock = threading.Lock()
-_settings: SamplerSettings = SamplerSettings()
+
+
+def _initial_settings() -> "SamplerSettings":
+    """Initial sampler settings, honouring SAMPLER_MODE / SAMPLER_RATE env-var overrides.
+
+    The cloud demo container sets ``SAMPLER_MODE=always`` so every run gets the deep audit
+    pipeline (the CEO needs to see the verdict panel populate on every prompt). Production
+    deployments leave them unset and get the PRD default of percentage / 5%.
+    """
+    import os
+
+    s = SamplerSettings()
+    mode = os.environ.get("SAMPLER_MODE", "").strip().lower()
+    if mode in ("percentage", "every_nth", "interval", "always", "never"):
+        s.mode = mode  # type: ignore[assignment]
+    try:
+        rate = os.environ.get("SAMPLER_RATE")
+        if rate is not None:
+            s.rate = max(0.0, min(1.0, float(rate)))
+    except ValueError:
+        pass
+    return s
+
+
+_settings: SamplerSettings = _initial_settings()
 _counter: int = 0  # every_nth counter
 _last_audit_ts: float = 0.0  # interval throttle
 

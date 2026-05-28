@@ -127,20 +127,32 @@ def upgrade() -> None:
     )
     op.execute(f"GRANT USAGE ON SCHEMA public TO {_API_ROLE}")
 
+    # Filter out tables that don't exist (0001 may have skipped memory_embeddings if pgvector is
+    # unavailable on the host - hosted Postgres often lacks it). Without this guard, the GRANT/
+    # POLICY statements would raise UndefinedTableError and abort the migration.
+    from sqlalchemy import text as _sa_text
+    bind = op.get_bind()
+    existing: set[str] = {row[0] for row in bind.execute(
+        _sa_text("SELECT tablename FROM pg_tables WHERE schemaname = 'public'")
+    )}
+
+    def _present(names: tuple[str, ...]) -> tuple[str, ...]:
+        return tuple(n for n in names if n in existing)
+
     # Grant DML on tenant-policy tables.
-    for table in _TENANT_TABLES + _NULLABLE_TENANT_TABLES:
+    for table in _present(_TENANT_TABLES + _NULLABLE_TENANT_TABLES):
         op.execute(f'GRANT SELECT, INSERT, UPDATE, DELETE ON "{table}" TO {_API_ROLE}')
 
     # Grant SELECT on FK-referenced tables (needed for FK lookups and read-only joins).
-    for table in _FK_TABLES:
+    for table in _present(_FK_TABLES):
         op.execute(f'GRANT SELECT ON "{table}" TO {_API_ROLE}')
 
     # Create policies (scoped to auditor_api so the superuser path is unaffected).
-    for table in _TENANT_TABLES:
+    for table in _present(_TENANT_TABLES):
         op.execute(_create_policy(table))
         op.execute(f'ALTER TABLE "{table}" FORCE ROW LEVEL SECURITY')
 
-    for table in _NULLABLE_TENANT_TABLES:
+    for table in _present(_NULLABLE_TENANT_TABLES):
         op.execute(_create_policy(table, nullable=True))
         op.execute(f'ALTER TABLE "{table}" FORCE ROW LEVEL SECURITY')
 
