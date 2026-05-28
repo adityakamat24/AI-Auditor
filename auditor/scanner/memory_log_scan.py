@@ -89,16 +89,20 @@ def _parse_since(value: str | None) -> datetime | None:
 
 
 def _extract_entities_from_payload(payload: dict) -> list[str]:
-    """Return the entity types present in this payload.
+    """Return the entity types present *as raw PII* in this payload.
 
-    Fast path: if the payload was redacted at write time, ``_pii_redacted`` holds the summary
-    and we read it directly (no recognizer pass needed). Slow path: walk the payload with the
-    redactor and re-detect (for events written before the redaction wiring landed).
+    The scanner's job is to surface PII that LEAKED past the write-time redactor - not to
+    re-report PII the redactor caught. So:
+
+      * If ``_pii_redacted`` is present in the payload, the redactor ran successfully and the
+        actual values are now placeholder tokens like ``<EMAIL_ADDRESS>``. Return ``[]`` -
+        nothing to flag.
+      * Otherwise (pre-redaction-wiring events, or events written with
+        ``EVENTS_REDACT_AT_REST=false``), walk the payload with the recognizer and report
+        whatever raw PII is still in there.
     """
-    if isinstance(payload, dict):
-        marker = payload.get("_pii_redacted")
-        if isinstance(marker, list) and marker:
-            return [str(e) for e in marker]
+    if isinstance(payload, dict) and "_pii_redacted" in payload:
+        return []
     return detect_entities_in_value(payload)
 
 

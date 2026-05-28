@@ -90,17 +90,17 @@ class TestRunFinding:
 
 
 class TestExtractEntitiesFromPayload:
-    def test_fast_path_reads_pii_marker(self) -> None:
-        """When payload was redacted at write time, ``_pii_redacted`` is the source of truth."""
+    def test_redacted_marker_skips_payload(self) -> None:
+        """Presence of ``_pii_redacted`` means the write-time redactor neutralized the values
+        already. The scanner's job is to surface LEAKS, not to re-report neutralized PII."""
         payload = {
             "to": "<EMAIL_ADDRESS>",
             "_pii_redacted": ["EMAIL_ADDRESS", "PHONE_NUMBER"],
         }
-        entities = _extract_entities_from_payload(payload)
-        assert sorted(entities) == ["EMAIL_ADDRESS", "PHONE_NUMBER"]
+        assert _extract_entities_from_payload(payload) == []
 
-    def test_slow_path_walks_payload(self) -> None:
-        """Old events (pre-redaction wiring) get a full recognizer pass."""
+    def test_unredacted_payload_walks_with_recognizer(self) -> None:
+        """Pre-redaction events (no marker) get a full recognizer pass."""
         payload = {"to": "alice@example.com", "body": "ssn 123-45-6789"}
         entities = _extract_entities_from_payload(payload)
         assert "EMAIL_ADDRESS" in entities
@@ -109,11 +109,12 @@ class TestExtractEntitiesFromPayload:
     def test_clean_payload_returns_empty(self) -> None:
         assert _extract_entities_from_payload({"tool_name": "file_read"}) == []
 
-    def test_empty_marker_falls_through_to_walk(self) -> None:
-        """An empty ``_pii_redacted`` list should not short-circuit a re-scan."""
+    def test_marker_with_empty_list_still_skips(self) -> None:
+        """If the redactor ran and found nothing, the marker may be missing entirely (that's
+        the ``_redact_payload`` no-op path). But if it IS present (even empty), trust it."""
         payload = {"to": "alice@example.com", "_pii_redacted": []}
-        entities = _extract_entities_from_payload(payload)
-        assert "EMAIL_ADDRESS" in entities
+        # Marker present → trust the redactor ran → skip.
+        assert _extract_entities_from_payload(payload) == []
 
 
 class TestFindingToVerdict:
