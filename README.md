@@ -12,12 +12,6 @@ Coverage maps to the **OWASP ASI Top 10 (2026)**. All ten categories have at lea
 
 **Status:** all eight build phases complete and verified on Windows (Python 3.12).
 
-**Honest notes:**
-- Built and tested on Windows native + Docker backing services.
-- The LLM judge uses a deterministic offline stub when `ANTHROPIC_API_KEY` is not set. Set the key (and start LiteLLM: `docker compose --profile judge up -d litellm`) for the live judge path.
-- The involuntary channel on Windows requires a one-time admin install of Sysmon (see Prerequisites). All other functionality runs without it.
-- The eBPF involuntary backend (Linux) compiles only on a Linux host; the auditor runs fully on Windows/macOS with the Sysmon backend or without the involuntary channel at all.
-
 ---
 
 ## Architecture (brief)
