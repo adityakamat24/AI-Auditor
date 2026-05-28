@@ -301,4 +301,50 @@ async def reset_demo_data(
     return {"wiped": targets}
 
 
+# ─── PII scanner (memory + logs / events at rest) ──────────────────────────
+
+
+class ScanRequest(BaseModel):
+    """Body for POST /admin/scanner/scan - all fields optional."""
+
+    since: str | None = None  # e.g. "24h", "7d", or an ISO timestamp; omitted = all-time
+
+
+@admin_router.post("/scanner/scan", status_code=status.HTTP_200_OK)
+async def run_pii_scanner(
+    body: ScanRequest | None = None,
+    claims: Annotated[dict, Depends(require_role("admin"))] = None,  # type: ignore[assignment]
+) -> dict:
+    """Trigger the PII-at-rest scanner for the caller's tenant.
+
+    Walks ``events.payload`` (and ``memory_entries`` when available) for the caller's tenant,
+    emits one rollup flag per affected ``run_id`` with category ``PII_AT_REST``. Read-only
+    against the source tables; writes only to ``verdicts`` / ``flags`` (and ``incidents`` for
+    HIGH severity, via the existing :func:`auditor.events.store.store_run_result` path).
+    Returns ``{"events_findings", "memory_findings", "runs_flagged", "verdicts_persisted"}``.
+    """
+    import uuid as _uuid
+
+    from auditor.scanner.memory_log_scan import _parse_since, run_scan
+
+    since_str = body.since if body and body.since else None
+    try:
+        since = _parse_since(since_str)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    tenant_id_str = claims.get("tenant_id") if claims else None
+    if not tenant_id_str:
+        raise HTTPException(status_code=400, detail="missing tenant_id on token")
+
+    summary = await run_scan(_uuid.UUID(tenant_id_str), since=since)
+    logger.info(
+        "admin.scanner.completed by=%s tenant=%s summary=%s",
+        claims.get("sub") if claims else "?",
+        tenant_id_str,
+        summary,
+    )
+    return summary
+
+
 __all__ = ["admin_router", "router", "get_db_session"]
