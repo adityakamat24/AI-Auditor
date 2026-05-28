@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+// Inline-gate decisions and the multiplexed control-plane frame (PRD §8.3, §9.3).
+package auditor.v1;
+
+import "events.proto";
+
+enum GateDecision {
+  DECISION_UNSPECIFIED = 0;
+  ALLOW = 1;
+  DENY = 2;
+  CONFIRM = 3;
+}
+
+message GateDecisionRequest {
+  Event event = 1;
+  int32 timeout_ms = 2;
+}
+
+message GateDecisionResponse {
+  string decision_id = 1;
+  GateDecision decision = 2;
+  repeated string reasons = 3;
+  int32 latency_ms = 4;
+}
+
+message Heartbeat {
+  int64 ts_unix_ns = 1;
+  string run_id = 2;
+  string role = 3;             // "harness" | "auditor"
+}
+
+// Auditor -> harness: update the seccomp/enforcement policy mid-run (§9.5.2).
+message SeccompUpdate {
+  string policy_json = 1;
+}
+
+// A single multiplexed frame on the mTLS control connection. Exactly one kind per frame.
+message Frame {
+  oneof kind {
+    Event event = 1;
+    GateDecisionRequest req = 2;
+    GateDecisionResponse resp = 3;
+    Heartbeat hb = 4;
+    SeccompUpdate seccomp_update = 5;
+  }
+}

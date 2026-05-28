@@ -1,0 +1,6 @@
+{
+  "asi_categories": ["ASI08"],
+  "min_severity": "high",
+  "reason_contains": "circuit-breaker",
+  "description": "Six consecutive errors on the same tool must trip the circuit-breaker and trigger ASI08 VIOLATION at HIGH severity."
+}

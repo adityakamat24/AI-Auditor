@@ -1,0 +1,56 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+*.egg-info/
+.eggs/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Environment / secrets — NEVER commit
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+certs/
+
+# Runtime data / forensic artefacts
+data/
+*.sqlite
+*.sqlite3
+*.dmp
+*.stackdump
+
+# Process-management scratch (PIDs, run logs, per-run harness logs)
+.run/
+
+# Rust (eBPF crate)
+involuntary/linux_ebpf/target/
+
+# Node / frontend
+node_modules/
+hitl_ui/frontend/dist/
+hitl_ui/frontend/.vite/
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Internal docs / notes — only the top-level README ships publicly.
+*.md
+!/README.md
+
+# NOTE: generated protobuf bindings in auditor/proto_gen/ are intentionally committed
+# (with a CI drift-check), so they are NOT ignored here.

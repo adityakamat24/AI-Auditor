@@ -1,0 +1,6 @@
+{
+  "asi_categories": ["ASI07"],
+  "min_severity": "critical",
+  "reason_contains": "unsigned",
+  "description": "An inter-agent message with empty signature must trigger ASI07 CRITICAL VIOLATION."
+}

@@ -1,0 +1,28 @@
+<Event xmlns="http://schemas.microsoft.com/win/2004/08/events/event">
+  <System>
+    <Provider Name="Microsoft-Windows-Sysmon" Guid="{5770385f-c22a-43e0-bf4c-06f5698ffbd9}" />
+    <EventID>11</EventID>
+    <Version>2</Version>
+    <Level>4</Level>
+    <Task>11</Task>
+    <Opcode>0</Opcode>
+    <Keywords>0x8000000000000000</Keywords>
+    <TimeCreated SystemTime="2026-05-27T18:30:03.7778990Z" />
+    <EventRecordID>104525</EventRecordID>
+    <Correlation />
+    <Execution ProcessID="3128" ThreadID="4044" />
+    <Channel>Microsoft-Windows-Sysmon/Operational</Channel>
+    <Computer>auditor-host.local</Computer>
+    <Security UserID="S-1-5-18" />
+  </System>
+  <EventData>
+    <Data Name="RuleName">-</Data>
+    <Data Name="UtcTime">2026-05-27 18:30:03.777</Data>
+    <Data Name="ProcessGuid">{a1b2c3d4-1111-6655-0000-0010abcdef01}</Data>
+    <Data Name="ProcessId">7344</Data>
+    <Data Name="Image">C:\Windows\System32\curl.exe</Data>
+    <Data Name="TargetFilename">C:\Users\agent\AppData\Local\Temp\exfil_payload.bin</Data>
+    <Data Name="CreationUtcTime">2026-05-27 18:30:03.777</Data>
+    <Data Name="User">AUDITOR-HOST\agent</Data>
+  </EventData>
+</Event>

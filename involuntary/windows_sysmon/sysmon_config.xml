@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Sysmon config for the AI Auditor's Windows involuntary-telemetry backend (PRD §9.2.2).
+  Install once (admin):   Sysmon64.exe -accepteula -i involuntary\windows_sysmon\sysmon_config.xml
+  Update a running inst.:  Sysmon64.exe -c involuntary\windows_sysmon\sysmon_config.xml
+
+  Enables the event types the auditor maps to the cross-platform Syscall* schema. The auditor's
+  subscriber filters to the harness ProcessId (and descendants) at read time, so these rules can be
+  broad. Note: Sysmon emits NO per-read file event (only FileCreate/FileDelete); file reads are
+  approximated via psutil open_files() polling + watchdog on sensitive paths.
+-->
+<Sysmon schemaversion="4.90">
+  <HashAlgorithms>sha256,IMPHASH</HashAlgorithms>
+  <DnsLookup>true</DnsLookup>
+  <EventFiltering>
+    <!-- EventID 1: ProcessCreate (~ Linux execve) -->
+    <ProcessCreate onmatch="include" />
+    <!-- EventID 3: NetworkConnect (~ connect / tcp_v4_connect) -->
+    <NetworkConnect onmatch="include" />
+    <!-- EventID 10: ProcessAccess (one process opening another — ASI03 identity abuse) -->
+    <ProcessAccess onmatch="include" />
+    <!-- EventID 11: FileCreate (~ openat with create intent) -->
+    <FileCreate onmatch="include" />
+    <!-- EventID 13: RegistryValueSet (sensitive-config touch; Windows-specific) -->
+    <RegistryEvent onmatch="include" />
+    <!-- EventID 22: DnsQuery (DNS resolution; useful on both platforms) -->
+    <DnsQuery onmatch="include" />
+    <!-- EventID 23: FileDelete -->
+    <FileDelete onmatch="include" />
+    <!-- Quiet the highest-volume noise so the harness signal stays legible. -->
+    <ProcessCreate onmatch="exclude">
+      <Image condition="is">C:\Windows\System32\svchost.exe</Image>
+    </ProcessCreate>
+  </EventFiltering>
+</Sysmon>

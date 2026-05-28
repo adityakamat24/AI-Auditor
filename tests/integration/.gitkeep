@@ -1,0 +1,1 @@
+# Integration tests (Phase 2+) use testcontainers against real Postgres/Redis/MinIO/OPA.

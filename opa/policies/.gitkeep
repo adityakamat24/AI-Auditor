@@ -1,0 +1,2 @@
+# OPA loads Rego policies from this directory (mounted into the opa container).
+# The default tenant policy ships in Phase 2.

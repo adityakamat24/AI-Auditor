@@ -1,0 +1,119 @@
+syntax = "proto3";
+
+// Canonical IPC wire format for telemetry events (PRD §8.3). The Pydantic models in
+// auditor/events/schemas.py mirror these messages 1:1.
+package auditor.v1;
+
+enum Channel {
+  CHANNEL_UNSPECIFIED = 0;
+  VOLUNTARY = 1;
+  INVOLUNTARY = 2;
+}
+
+message BaseEvent {
+  string event_id = 1;
+  string run_id = 2;
+  string tenant_id = 3;
+  string span_id = 4;
+  string parent_span_id = 5;
+  Channel channel = 6;
+  string event_type = 7;
+  int64 ts_unix_ns = 8;
+  int32 pid = 9;
+  int32 schema_version = 10;
+}
+
+// ---------------- Voluntary payloads (emitted by the harness SDK) ----------------
+
+message ToolCallStart {
+  string agent_id = 1;
+  string tool_name = 2;
+  string tool_args_json = 3;     // JSON-encoded args dict (kept as string on the wire)
+  string declared_purpose = 4;
+  string tool_call_id = 5;
+  string schema_hash = 6;        // hex sha256 of the tool's declared schema (ASI04)
+}
+
+message ToolCallEnd {
+  string agent_id = 1;
+  string tool_call_id = 2;       // links to ToolCallStart
+  string status = 3;             // "success" | "error"
+  string result_summary = 4;
+  string error = 5;
+}
+
+message LLMCall {
+  string agent_id = 1;
+  string model = 2;
+  bytes messages_hash = 3;       // sha256 of messages; full content stored in blob
+  int32 tokens_in = 4;
+  int32 tokens_out = 5;
+}
+
+message MemoryOp {
+  string agent_id = 1;
+  string op = 2;                 // "read" | "write"
+  string store = 3;              // "session" | "long_term"
+  repeated string keys_or_query = 4;
+  string source = 5;             // for writes: provenance of the content
+}
+
+message InterAgentMessage {
+  string sender_id = 1;
+  string receiver_id = 2;
+  bytes message_hash = 3;
+  bytes signature = 4;           // HMAC / Ed25519 signature over the message
+}
+
+message IntentDeclaration {
+  string agent_id = 1;
+  string intent = 2;             // natural language
+  repeated string plan_steps = 3;
+}
+
+// ---------------- Involuntary payloads (kernel observation) ----------------
+
+message SyscallOpenat {
+  string path = 1;
+  int32 flags = 2;
+}
+
+message SyscallConnect {
+  string family = 1;             // AF_INET | AF_INET6 | AF_UNIX
+  string addr = 2;
+  int32 port = 3;
+}
+
+message SyscallExecve {
+  string binary = 1;
+  repeated string argv = 2;
+}
+
+message SyscallSendto {
+  int32 fd = 1;
+  int64 bytes_sent = 2;
+  string dest_addr = 3;
+}
+
+message DnsQuery {
+  string query_name = 1;
+  repeated string results = 2;   // resolved addresses
+}
+
+// The on-the-wire event: a base header plus exactly one payload.
+message Event {
+  BaseEvent base = 1;
+  oneof payload {
+    ToolCallStart tool_call_start = 10;
+    ToolCallEnd tool_call_end = 11;
+    LLMCall llm_call = 12;
+    MemoryOp memory_op = 13;
+    InterAgentMessage agent_message = 14;
+    IntentDeclaration intent_declare = 15;
+    SyscallOpenat syscall_openat = 20;
+    SyscallConnect syscall_connect = 21;
+    SyscallExecve syscall_execve = 22;
+    SyscallSendto syscall_sendto = 23;
+    DnsQuery dns_query = 24;
+  }
+}

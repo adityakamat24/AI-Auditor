@@ -1,0 +1,19 @@
+name: red-team
+
+# Full adversarial suite (one attack per ASI category + chained scenarios). The real suite is
+# implemented in Phase 4; this Phase-1 placeholder runs green so the workflow exists and is wired.
+on:
+  schedule:
+    - cron: "0 6 * * *" # nightly 06:00 UTC
+  workflow_dispatch:
+
+jobs:
+  adversarial:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Placeholder
+        run: echo "Adversarial suite arrives in Phase 4 -> python -m adversarial.runner --all"

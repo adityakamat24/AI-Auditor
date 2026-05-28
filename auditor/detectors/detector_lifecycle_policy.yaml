@@ -1,0 +1,91 @@
+# Detector lifecycle promotion criteria (PRD §9.13).
+#
+# Each transition key maps to the gates that MUST pass before the transition is allowed.
+# Gates are evaluated by DetectorLifecycle.transition() in lifecycle.py.
+#
+# Fields:
+#   min_days          - minimum calendar days the detector must have spent in the *current* state
+#   precision_min     - minimum observed precision (0.0–1.0) from the supplied metrics
+#   fp_rate_max       - maximum false-positive rate (0.0–1.0) from the supplied metrics
+#   admin_approval    - whether a human admin actor_id must be supplied
+#   no_critical_incidents - whether the metrics snapshot must show zero critical incidents
+#   auto              - transition may be triggered without admin approval (system-driven)
+
+transitions:
+  PROPOSED->SHADOW:
+    min_days: 0            # no mandatory soak; requires passing tests + registry registration
+    precision_min: null    # no precision gate at this stage (no live data yet)
+    fp_rate_max: null
+    admin_approval: false
+    no_critical_incidents: false
+    description: >
+      Code review passed, unit tests green, detector registered in the registry.
+      Promoted by an admin (or CI) after merge.
+
+  SHADOW->CANARY:
+    min_days: 7            # minimum 7 days of shadow traffic
+    precision_min: 0.80    # observed precision >= 0.80 against ground truth set
+    fp_rate_max: 0.05      # FP rate <= 5% on real shadow traffic
+    admin_approval: true
+    no_critical_incidents: false
+    description: >
+      At least 7 days in SHADOW, precision >=0.80 against ground truth,
+      FP rate <=5% on real traffic, admin approval required.
+
+  CANARY->ENFORCING:
+    min_days: 7            # minimum 7 days of canary traffic
+    precision_min: 0.85    # observed precision >= 0.85 against canary-labeled flags
+    fp_rate_max: null      # no explicit FP gate (subsumed by precision)
+    admin_approval: true
+    no_critical_incidents: true   # zero critical incidents attributed to this detector
+    description: >
+      At least 7 days in CANARY, precision >=0.85 against canary-labeled flags,
+      no critical incidents attributed to the detector, admin approval required.
+
+  ENFORCING->DISABLED:
+    min_days: 0
+    precision_min: null
+    fp_rate_max: null
+    admin_approval: false   # can be auto-triggered by calibration system OR manually by admin
+    no_critical_incidents: false
+    auto: true              # calibration job triggers this automatically on 3 consecutive sub-0.85 runs
+    description: >
+      Auto-disabled when precision drops below 0.85 for 3 consecutive nightly calibration runs,
+      OR manually disabled by an admin (e.g., during incident response).
+
+  ENFORCING->DEPRECATED:
+    min_days: 0
+    precision_min: null
+    fp_rate_max: null
+    admin_approval: true
+    no_critical_incidents: false
+    description: >
+      Admin manually phases out a detector; emits warnings until REMOVED in a code change.
+
+  DISABLED->SHADOW:
+    min_days: 0
+    precision_min: null
+    fp_rate_max: null
+    admin_approval: true
+    no_critical_incidents: false
+    description: >
+      Admin re-enables a disabled detector by moving it back to SHADOW for re-evaluation.
+
+  DEPRECATED->REMOVED:
+    min_days: 0
+    precision_min: null
+    fp_rate_max: null
+    admin_approval: true
+    no_critical_incidents: false
+    description: >
+      Final removal; detector code is deleted in the same PR.
+
+# Canary routing configuration.
+# The canary partition fraction controls what share of traffic runs a CANARY detector.
+canary:
+  default_partition: 0.05   # 5% of traffic by default (hash-partitioned by run_id)
+
+# Auto-disable trigger for ENFORCING detectors.
+auto_disable:
+  consecutive_nightly_runs_below_threshold: 3
+  precision_threshold: 0.85

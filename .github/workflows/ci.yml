@@ -1,0 +1,91 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint-test:
+    name: lint + unit (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install
+        run: python -m pip install --upgrade pip && pip install -e ".[dev]"
+      - name: Lint (ruff)
+        run: ruff check auditor harness adversarial tests scripts
+      - name: Unit tests
+        run: pytest tests/unit -q
+
+  migrate:
+    name: alembic migrate (postgres + pgvector)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: auditor
+          POSTGRES_PASSWORD: auditor
+          POSTGRES_DB: auditor
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U auditor -d auditor"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      POSTGRES_DSN: postgresql+asyncpg://auditor:auditor@localhost:5432/auditor
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install
+        run: python -m pip install --upgrade pip && pip install -e ".[dev]"
+      - name: Migrate up / down / up (reversible on a fresh DB)
+        run: |
+          alembic upgrade head
+          alembic downgrade base
+          alembic upgrade head
+
+  integration:
+    name: integration + red-team (inline gate over mTLS)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install
+        run: python -m pip install --upgrade pip && pip install -e ".[dev,gate]"
+      - name: spaCy model (Presidio NER)
+        run: python -m spacy download en_core_web_sm
+      - name: Start backing services
+        run: docker compose up -d postgres redis opa
+      - name: Wait for Postgres
+        run: |
+          for _ in $(seq 1 60); do
+            if docker compose exec -T postgres pg_isready -U auditor -d auditor; then exit 0; fi
+            sleep 1
+          done
+          echo "postgres not ready" && exit 1
+      - name: Migrate
+        run: alembic upgrade head
+      - name: Integration + red-team tests
+        run: pytest tests/integration tests/red_team -q

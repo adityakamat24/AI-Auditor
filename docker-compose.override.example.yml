@@ -1,0 +1,9 @@
+# Copy to docker-compose.override.yml (gitignored) to customize locally; compose auto-merges it.
+services:
+  postgres:
+    ports:
+      - "55432:5432"   # example: remap if a local Postgres already owns 5432
+  minio:
+    ports:
+      - "59000:9000"
+      - "59001:9001"

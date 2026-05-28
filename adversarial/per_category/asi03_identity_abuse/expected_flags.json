@@ -1,0 +1,6 @@
+{
+  "asi_categories": ["ASI03", "ASI01"],
+  "divergence_severity": "critical",
+  "reason_contains": "sensitive path",
+  "description": "Undeclared ~/.ssh/id_rsa read + undeclared egress must raise CRITICAL channel-divergence findings; the declared /tmp/data.csv read must NOT be flagged."
+}

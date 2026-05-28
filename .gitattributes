@@ -1,0 +1,18 @@
+# Normalize line endings so bash scripts stay LF and PowerShell stays CRLF across OSes.
+* text=auto eol=lf
+
+*.ps1  text eol=crlf
+*.psm1 text eol=crlf
+*.bat  text eol=crlf
+*.cmd  text eol=crlf
+
+*.sh   text eol=lf
+
+# Binaries
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.ico  binary
+*.dmp  binary
+*.pem  binary
+*.onnx binary

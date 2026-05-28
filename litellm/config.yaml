@@ -1,0 +1,26 @@
+# LiteLLM proxy config (PRD §6: every LLM call goes through the proxy for cost accounting; §9.8).
+# Judge = Anthropic Haiku; abstain/cross-check = Sonnet. Keys are read from the environment.
+# Detailed per-tenant spend logging + virtual keys are configured in Phase 4.
+model_list:
+  # model_name == the real Anthropic id so callers route by it (auditor uses settings.judge_model etc.).
+  # Aliases "judge"/"sonnet" kept too, so either name works.
+  - model_name: claude-haiku-4-5-20251001
+    litellm_params:
+      model: anthropic/claude-haiku-4-5-20251001
+      api_key: os.environ/ANTHROPIC_API_KEY
+  - model_name: claude-sonnet-4-6
+    litellm_params:
+      model: anthropic/claude-sonnet-4-6
+      api_key: os.environ/ANTHROPIC_API_KEY
+  - model_name: judge
+    litellm_params:
+      model: anthropic/claude-haiku-4-5-20251001
+      api_key: os.environ/ANTHROPIC_API_KEY
+  - model_name: sonnet
+    litellm_params:
+      model: anthropic/claude-sonnet-4-6
+      api_key: os.environ/ANTHROPIC_API_KEY
+
+litellm_settings:
+  drop_params: true
+  # cost tracking is on by default; LiteLLM records per-response spend.

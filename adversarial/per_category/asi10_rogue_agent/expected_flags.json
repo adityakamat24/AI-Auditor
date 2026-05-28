@@ -1,0 +1,6 @@
+{
+  "asi_categories": ["ASI10"],
+  "min_severity": "high",
+  "reason_contains": "offline-stub matched",
+  "description": "A final action body that contradicts the declared mission must trigger ASI10 VIOLATION at HIGH severity."
+}

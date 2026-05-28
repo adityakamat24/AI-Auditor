@@ -1,0 +1,6 @@
+{
+  "asi_categories": ["ASI04"],
+  "min_severity": "critical",
+  "reason_contains": "mismatch",
+  "description": "Tool called with schema_hash differing from the catalog entry must trigger ASI04 CRITICAL VIOLATION."
+}

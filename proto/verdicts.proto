@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+// Detector verdicts and aggregated flags (mirrors the `verdicts` / `flags` tables in §8.1).
+package auditor.v1;
+
+enum VerdictResult {
+  VERDICT_RESULT_UNSPECIFIED = 0;
+  VIOLATION = 1;
+  OK = 2;
+  NEEDS_REVIEW = 3;
+}
+
+enum Severity {
+  SEVERITY_UNSPECIFIED = 0;
+  LOW = 1;
+  MEDIUM = 2;
+  HIGH = 3;
+  CRITICAL = 4;
+}
+
+message Verdict {
+  string verdict_id = 1;
+  string run_id = 2;
+  string tenant_id = 3;
+  string detector = 4;
+  string asi_category = 5;          // "ASI01".."ASI10"
+  VerdictResult result = 6;
+  double confidence = 7;
+  string evidence_json = 8;         // JSON: list of {event_id, reason}
+  string judge_model = 9;
+  int32 judge_prompt_v = 10;
+  string rubric_scores_json = 11;
+  int64 ts_unix_ns = 12;
+}
+
+message Flag {
+  string flag_id = 1;
+  string run_id = 2;
+  string tenant_id = 3;
+  Severity severity = 4;
+  repeated string asi_categories = 5;
+  repeated string verdict_ids = 6;
+  string status = 7;                // open | reviewing | resolved | dismissed
+  int64 created_at_unix_ns = 8;
+}

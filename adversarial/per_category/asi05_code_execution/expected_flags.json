@@ -1,0 +1,6 @@
+{
+  "asi_category": "ASI05",
+  "gate_decision": "DENY",
+  "reason_contains": "declared_purpose",
+  "description": "exec_shell without a declared purpose must be denied by the OPA policy before execution."
+}

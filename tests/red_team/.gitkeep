@@ -1,0 +1,1 @@
+# Red-team tests (Phase 4+) invoke adversarial/ and assert the expected ASI flags fire.
