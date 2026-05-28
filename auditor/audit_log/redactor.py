@@ -242,4 +242,102 @@ class Redactor:
         return anonymized.text
 
 
-__all__ = ["Redactor"]
+# ---------------------------------------------------------------------------
+# Process-wide singleton (avoid re-initializing Presidio per call site)
+# ---------------------------------------------------------------------------
+
+_SINGLETON: Redactor | None = None
+_LOG_SINGLETON: Redactor | None = None
+
+
+def get_redactor(*, force_regex: bool = False) -> Redactor:
+    """Return the process-wide :class:`Redactor` for *event payloads* (Presidio when available).
+
+    Events are structured (tool args, prompts, summaries) and infrequent enough per run that
+    Presidio's heavier NLP-backed accuracy is worth it. The structured fields rarely produce the
+    false-positive bursts Presidio generates on free-form prose (see :func:`get_log_redactor`).
+    """
+    global _SINGLETON  # noqa: PLW0603
+    if _SINGLETON is None:
+        _SINGLETON = Redactor(force_regex=force_regex)
+    return _SINGLETON
+
+
+def get_log_redactor() -> Redactor:
+    """Return the process-wide :class:`Redactor` for *structlog output* (regex-only).
+
+    Logs are high-volume free-form prose. Presidio's spaCy-backed recognizers are aggressive
+    against free-form text: ``"auditor.started"`` gets tagged as ``URL``, version strings get
+    tagged as ``ORGANIZATION``, etc. That destroys debuggability. The regex backend only matches
+    the high-signal entity types we actually care about in logs (email, SSN, credit card, phone,
+    API key) and runs ~10x faster.
+    """
+    global _LOG_SINGLETON  # noqa: PLW0603
+    if _LOG_SINGLETON is None:
+        _LOG_SINGLETON = Redactor(force_regex=True)
+    return _LOG_SINGLETON
+
+
+def reset_redactor_for_tests() -> None:
+    """Drop the cached singletons; tests that flip force_regex use this."""
+    global _SINGLETON, _LOG_SINGLETON  # noqa: PLW0603
+    _SINGLETON = None
+    _LOG_SINGLETON = None
+
+
+# ---------------------------------------------------------------------------
+# Entity-type extraction (used by the events store to record what was found)
+# ---------------------------------------------------------------------------
+
+
+def detect_entities(text: str) -> list[str]:
+    """Return the sorted, deduplicated list of PII entity types present in *text*.
+
+    Uses Presidio when available, regex fallback otherwise. Returns an empty list
+    if no PII is detected or *text* is empty. Designed so the events store can
+    persist a small ``_pii_redacted`` summary alongside the redacted payload
+    without leaking the raw matched spans.
+    """
+    if not text:
+        return []
+    r = get_redactor()
+    if r.backend == "presidio" and _ANALYZER is not None:
+        try:
+            results = _ANALYZER.analyze(text=text, language="en")
+            return sorted({res.entity_type for res in results})
+        except Exception:  # noqa: BLE001 - fall through to regex
+            pass
+    found: set[str] = set()
+    for pattern, tag in _REGEX_PATTERNS:
+        if pattern.search(text):
+            found.add(tag.strip("<>"))
+    return sorted(found)
+
+
+def detect_entities_in_value(value: Any) -> list[str]:
+    """Recursively walk a dict/list/str value and return all entity types found."""
+    entities: set[str] = set()
+
+    def _walk(v: Any) -> None:
+        if isinstance(v, str):
+            for e in detect_entities(v):
+                entities.add(e)
+        elif isinstance(v, dict):
+            for inner in v.values():
+                _walk(inner)
+        elif isinstance(v, list):
+            for inner in v:
+                _walk(inner)
+
+    _walk(value)
+    return sorted(entities)
+
+
+__all__ = [
+    "Redactor",
+    "get_redactor",
+    "get_log_redactor",
+    "reset_redactor_for_tests",
+    "detect_entities",
+    "detect_entities_in_value",
+]

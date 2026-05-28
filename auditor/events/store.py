@@ -9,11 +9,13 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 from datetime import UTC, datetime
 from uuid import UUID
 
 from sqlalchemy import select
 
+from auditor.audit_log.redactor import detect_entities_in_value, get_redactor
 from auditor.db.models import Event as EventRow
 from auditor.db.models import Flag as FlagRow
 from auditor.db.models import GateDecision as GateDecisionRow
@@ -66,6 +68,44 @@ def payload_hash(payload: dict) -> bytes:
     return hashlib.sha256(json.dumps(payload, sort_keys=True, default=str).encode("utf-8")).digest()
 
 
+# The payload at rest is redacted by default so PII never lands in events.payload (and therefore
+# not in Fly's log shipper, not in any DB dump, not in the HITL UI's event viewer). Set
+# EVENTS_REDACT_AT_REST=false to disable for debugging - but never in production.
+_REDACT_AT_REST: bool = os.environ.get("EVENTS_REDACT_AT_REST", "true").strip().lower() != "false"
+
+# Fields the detectors must read raw to do their job. ASI01 matches injection markers in tool
+# outputs (those aren't PII so redaction wouldn't touch them anyway), but the user's *declared
+# goal* contains exfil verbs + secret nouns that the goal-hijack regex grades. Redacting an
+# email in the prompt is fine (the patterns key on "API_KEY" / "secret", not on the email);
+# we leave the key set conservative and expand later if a detector regresses.
+_RAW_FIELDS_PRESERVED: frozenset[str] = frozenset()
+
+
+def _redact_payload(payload: dict) -> tuple[dict, list[str]]:
+    """Redact PII in ``payload`` (deep) and return ``(redacted_payload, entity_types_found)``.
+
+    Detectors continue to work because:
+      * injection markers (``SYSTEM:``, ``ignore previous instructions``) are not PII so they
+        are not touched;
+      * the exfil pattern (verb + secret-noun) keys on words like ``API_KEY`` / ``secret`` /
+        ``password`` which the recognizers do not classify as PII either;
+      * role/HMAC/budget detectors do not read content at all.
+
+    The list of entity types is small (e.g. ``["EMAIL_ADDRESS", "US_SSN"]``) and is persisted
+    alongside the payload under ``_pii_redacted`` so the scanner + UI can show "this event had
+    1 email and 1 SSN" without ever exposing the raw values.
+    """
+    if not _REDACT_AT_REST or not payload:
+        return payload, []
+    entities = detect_entities_in_value(payload)
+    if not entities:
+        return payload, []
+    r = get_redactor()
+    redacted = r.redact_dict(payload)
+    redacted["_pii_redacted"] = entities
+    return redacted, entities
+
+
 async def upsert_run(run_id: UUID, tenant_id: UUID, *, declared_goal: str | None = None) -> None:
     """Create the run row if it does not exist (events FK-reference it)."""
     sessionmaker = get_sessionmaker()
@@ -96,8 +136,15 @@ async def update_run_declared_goal(run_id: UUID, declared_goal: str) -> None:
 
 
 async def store_event(event: dict, ts: datetime) -> UUID:
-    """Persist one event; returns its event_id. Base fields become columns, the rest become payload."""
-    payload = {k: v for k, v in event.items() if k not in _BASE_KEYS}
+    """Persist one event; returns its event_id. Base fields become columns, the rest become payload.
+
+    The payload is PII-redacted before persistence (see ``_redact_payload``). ``payload_hash`` is
+    computed over the *raw* payload so dedup semantics and downstream content-addressed lookups
+    keep working - the hash is a one-way fingerprint, not a way to recover the raw text. Set
+    ``EVENTS_REDACT_AT_REST=false`` to disable redaction (debug only - never in production).
+    """
+    raw_payload = {k: v for k, v in event.items() if k not in _BASE_KEYS}
+    stored_payload, _ = _redact_payload(raw_payload)
     event_id = UUID(event["event_id"]) if event.get("event_id") else uuid7()
     sessionmaker = get_sessionmaker()
     async with sessionmaker() as session, session.begin():
@@ -112,8 +159,8 @@ async def store_event(event: dict, ts: datetime) -> UUID:
                 event_type=event["event_type"],
                 ts=ts,
                 pid=event.get("pid"),
-                payload=payload,
-                payload_hash=payload_hash(payload),
+                payload=stored_payload,
+                payload_hash=payload_hash(raw_payload),
             )
         )
     return event_id
