@@ -1,4 +1,4 @@
-"""Pydantic v2 event models — the in-process mirror of ``proto/events.proto`` (PRD §8.2).
+"""Pydantic v2 event models - the in-process mirror of ``proto/events.proto`` (PRD §8.2).
 
 The on-the-wire format is the protobuf in :mod:`auditor.proto_gen`; the pydantic<->proto bridge
 ships with the Telemetry SDK in Phase 2. Events are immutable observations.

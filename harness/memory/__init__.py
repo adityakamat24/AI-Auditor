@@ -1,4 +1,4 @@
-"""Harness memory (PRD §9) — session + long-term stores. STUB — Phase 4.
+"""Harness memory (PRD §9) - session + long-term stores. STUB - Phase 4.
 
 The agents' memory: short-lived session memory (Redis) and long-term semantic memory (pgvector). Memory
 reads/writes emit voluntary ``memory.*`` events the auditor uses for ASI06 (poisoning). Submodules are stubs.

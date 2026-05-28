@@ -75,9 +75,9 @@ services:
       - ./litellm/config.yaml:/app/config.yaml:ro
 
   # ---------------------------------------------------------------------------
-  # Observability stack (optional — bring up with: docker compose --profile observability up -d)
+  # Observability stack (optional - bring up with: docker compose --profile observability up -d)
   # The auditor runs natively on the host; Prometheus reaches it via host.docker.internal:8000/metrics.
-  # Grafana is available at http://localhost:3000 (admin / admin — change on first login).
+  # Grafana is available at http://localhost:3000 (admin / admin - change on first login).
   # ---------------------------------------------------------------------------
 
   prometheus:

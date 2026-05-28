@@ -16,7 +16,7 @@ from auditor.audit_log.redactor import Redactor
 
 
 def _make_regex_redactor() -> Redactor:
-    """Always use the regex backend — no spaCy needed."""
+    """Always use the regex backend - no spaCy needed."""
     return Redactor(force_regex=True)
 
 

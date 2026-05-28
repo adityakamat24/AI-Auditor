@@ -1,8 +1,8 @@
-"""Long-term memory (PRD §9) — semantic store over pgvector. STUB — implemented in Phase 4.
+"""Long-term memory (PRD §9) - semantic store over pgvector. STUB - implemented in Phase 4.
 
 Durable semantic memory: text is embedded (via :mod:`auditor.embeddings`) and stored/queried in the
 ``memory_embeddings`` pgvector table. Writes record provenance and emit ``memory.write`` events; reads emit
-``memory.read`` — the core signal for ASI06 (memory poisoning).
+``memory.read`` - the core signal for ASI06 (memory poisoning).
 """
 
 from __future__ import annotations

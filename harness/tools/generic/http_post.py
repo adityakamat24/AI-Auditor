@@ -1,6 +1,6 @@
 """Generic tool: HTTP POST (PRD §9.7).
 
-Stubbed external-egress action the gate watches (exfiltration risk). v1 performs NO real network call — it
+Stubbed external-egress action the gate watches (exfiltration risk). v1 performs NO real network call - it
 returns a canned response so adversarial scenarios can exercise the gate without reaching the internet.
 """
 

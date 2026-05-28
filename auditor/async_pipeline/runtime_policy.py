@@ -1,12 +1,12 @@
-"""Runtime sampler policy (PRD §5.4) — user-configurable from the UI / admin API.
+"""Runtime sampler policy (PRD §5.4) - user-configurable from the UI / admin API.
 
 A single, process-wide, mutable sampling policy the reviewer adjusts at runtime:
 
-- ``percentage``  — L1 hard triggers + a stratified deterministic sample at ``rate`` (the PRD default).
-- ``every_nth``   — L1 hard triggers + every Nth run (deterministic counter).
-- ``interval``    — L1 hard triggers + at most one audited run per ``interval_seconds``.
-- ``always``      — audit every run.
-- ``never``       — audit nothing (truly off; intended for demo control, not for production).
+- ``percentage``  - L1 hard triggers + a stratified deterministic sample at ``rate`` (the PRD default).
+- ``every_nth``   - L1 hard triggers + every Nth run (deterministic counter).
+- ``interval``    - L1 hard triggers + at most one audited run per ``interval_seconds``.
+- ``always``      - audit every run.
+- ``never``       - audit nothing (truly off; intended for demo control, not for production).
 
 Hard-trigger L1 audits (channel divergence, cheap-risk above threshold, sensitive data outside the
 allowlist, recent-incident tenants) still fire in every mode except ``never``. The orchestrator + judge
@@ -79,11 +79,11 @@ def decide(run_id: UUID, tenant_id: UUID, signals: RunSignals) -> SamplerDecisio
     """The user-configurable sampler decision. L1 hard triggers + the selected mode for L2."""
     settings = get_settings_snapshot()
 
-    # `never` truly skips everything — including the L1 hard triggers. Use with care.
+    # `never` truly skips everything - including the L1 hard triggers. Use with care.
     if settings.mode == "never":
         return SamplerDecision(tier="NONE", reason="sampler off (mode=never)", audit=False, judge_allowed=False)
 
-    # L1 hard triggers — always audit when they fire (any mode except `never`).
+    # L1 hard triggers - always audit when they fire (any mode except `never`).
     if signals.channel_divergence:
         return SamplerDecision("L1", "channel divergence", True, True)
     if signals.cheap_risk_score >= settings.critical_risk_threshold:
@@ -105,7 +105,7 @@ def decide(run_id: UUID, tenant_id: UUID, signals: RunSignals) -> SamplerDecisio
         if (current % settings.every_n) == 0:
             return SamplerDecision("L2", f"every {settings.every_n}th run (#{current})", True, True)
         return SamplerDecision(
-            "NONE", f"skip — run #{current} is not a multiple of {settings.every_n}", False, False,
+            "NONE", f"skip - run #{current} is not a multiple of {settings.every_n}", False, False,
         )
 
     if settings.mode == "interval":
@@ -133,12 +133,12 @@ def decide(run_id: UUID, tenant_id: UUID, signals: RunSignals) -> SamplerDecisio
             "L2", f"stratified at {settings.rate:.2%}", True, True, settings.rate,
         )
     return SamplerDecision(
-        "NONE", f"skip — not sampled (rate {settings.rate:.2%})", False, False, settings.rate,
+        "NONE", f"skip - not sampled (rate {settings.rate:.2%})", False, False, settings.rate,
     )
 
 
 def reset_for_tests() -> None:
-    """Reset runtime state — for unit tests only."""
+    """Reset runtime state - for unit tests only."""
     global _settings, _counter, _last_audit_ts
     with _state_lock:
         _settings = SamplerSettings()

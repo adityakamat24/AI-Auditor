@@ -1,4 +1,4 @@
-"""PII redactor (PRD §9.11.2) — Presidio-backed with regex fallback.
+"""PII redactor (PRD §9.11.2) - Presidio-backed with regex fallback.
 
 Replaces PII spans with ``<ENTITY_TYPE>`` placeholders using Presidio's ``replace``
 anonymisation strategy. Falls back to a pure-regex engine when Presidio or the spaCy
@@ -31,10 +31,10 @@ log = get_logger("auditor.audit_log.redactor")
 # ---------------------------------------------------------------------------
 #
 # Each entry is (pattern, replacement_tag).
-# Applied in order — earlier patterns win on overlapping spans.
+# Applied in order - earlier patterns win on overlapping spans.
 
 _REGEX_PATTERNS: list[tuple[re.Pattern[str], str]] = [
-    # Generic API key / secret / token — MUST run first to avoid digit sub-patterns
+    # Generic API key / secret / token - MUST run first to avoid digit sub-patterns
     # matching inside the value before we get a chance to redact the whole field.
     # Matches: key=value or key: value styles, alphanumeric value ≥20 chars.
     (

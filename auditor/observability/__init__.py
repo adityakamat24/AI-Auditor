@@ -1,4 +1,4 @@
-"""Observability package — Prometheus metrics for the AI Auditor."""
+"""Observability package - Prometheus metrics for the AI Auditor."""
 
 from auditor.observability.metrics import (
     init_metrics,

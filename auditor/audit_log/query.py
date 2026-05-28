@@ -18,7 +18,7 @@ flags:
   - evidence__event__tool_name  → evidence->>'event.tool_name' is NOT a direct column;
     we proxy via a join to events when the field name is the JSONB shorthand. For the
     §9.11.4 example ("evidence.event.tool_name") flags do NOT have an ``evidence`` JSONB
-    column — verdicts do. The DSL accepts the shorthand and maps it to the verdict evidence.
+    column - verdicts do. The DSL accepts the shorthand and maps it to the verdict evidence.
     Because Flag rows have ``verdict_ids``, a full join is impractical in a parameterised
     SELECT without raw SQL. We therefore expose ``evidence__event__tool_name`` as a
     *documented partial*: the compiler validates and generates a clause against the flags
@@ -225,7 +225,7 @@ class SavedQueryCreate(BaseModel):
 
 
 class SavedQueryRun(BaseModel):
-    """Body for POST /audit/saved-queries/{id}/run — bind params before executing."""
+    """Body for POST /audit/saved-queries/{id}/run - bind params before executing."""
 
     params: dict[str, Any] = {}
 
@@ -265,7 +265,7 @@ def build_select(query: Query) -> tuple[Select, dict]:  # type: ignore[type-arg]
     for field, raw_value in query.filter.items():
         col_expr = allowlist[field]
 
-        # Special-case the flags partial (text("TRUE")) — skip adding a WHERE clause.
+        # Special-case the flags partial (text("TRUE")) - skip adding a WHERE clause.
         if hasattr(col_expr, "text") and str(col_expr) == "TRUE":
             continue
 

@@ -7,7 +7,7 @@ Usage::
     python -m auditor.calibration.label --list
     python -m auditor.calibration.label --list --category ASI06
 
-Exit codes: 0 — success, 2 — usage / validation error.
+Exit codes: 0 - success, 2 - usage / validation error.
 
 # Testing seam
 # ---------------
@@ -42,7 +42,7 @@ async def _add_ground_truth(
     label: str,
     source: str,
 ) -> Any:
-    """Insert a GroundTruth row into *session* and flush (no commit — caller handles it).
+    """Insert a GroundTruth row into *session* and flush (no commit - caller handles it).
 
     Returns the inserted row so callers can inspect it (useful in tests).
     """

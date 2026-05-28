@@ -39,7 +39,7 @@ async def show(run_id: UUID) -> None:
     if sampler is not None:
         print(f"  sampler: tier={sampler.tier_fired}  reason={sampler.reason}")
     else:
-        print("  sampler: (not yet audited — try again in a few seconds)")
+        print("  sampler: (not yet audited - try again in a few seconds)")
 
     if flag is None:
         print("  AUDIT RESULT: [CLEAN] no flag raised")
@@ -62,7 +62,7 @@ async def show(run_id: UUID) -> None:
         print(f"\n  [{CHECK_TITLES[check]}]")
         for verdict in findings:
             reason = verdict.evidence[0].get("reason", "") if verdict.evidence else ""
-            print(f"     - {verdict.detector}: {verdict.result}  — {reason[:110]}")
+            print(f"     - {verdict.detector}: {verdict.result}  - {reason[:110]}")
 
     if incident is not None:
         print(f"\n  INCIDENT {incident.incident_id}  state={incident.state}")

@@ -6,7 +6,7 @@ from auditor.config import Settings, get_settings
 
 
 def test_embedding_dim_default_is_384() -> None:
-    # Structural default — independent of any env/.env on the machine.
+    # Structural default - independent of any env/.env on the machine.
     assert Settings.model_fields["embedding_dim"].default == 384
 
 

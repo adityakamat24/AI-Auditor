@@ -1,6 +1,6 @@
-"""Enforcement backstop (PRD §9.5) — pause/resume/abort a misbehaving run.
+"""Enforcement backstop (PRD §9.5) - pause/resume/abort a misbehaving run.
 
-Two layers: the cooperative IPC response (the SDK obeys a DENY — primary, cross-platform) and the
+Two layers: the cooperative IPC response (the SDK obeys a DENY - primary, cross-platform) and the
 OS-level backstop for a compromised harness (Windows Job Object + process suspend; Linux cgroup freezer
 + seccomp). All implement the :class:`Enforcer` ABC. ``get_enforcer`` selects the platform backstop.
 """
@@ -12,7 +12,7 @@ import sys
 from auditor.enforcement.base import Enforcer
 
 # Process-wide singleton: one OS-level enforcer owns the run_id→pid registry for this process, so a run
-# paused on a critical flag (HITL router) can be resumed/aborted by the HITL decision route — same
+# paused on a critical flag (HITL router) can be resumed/aborted by the HITL decision route - same
 # registry. Without this, each get_enforcer() call would start an empty registry and resume would no-op.
 _enforcer: Enforcer | None = None
 

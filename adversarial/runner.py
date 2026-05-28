@@ -1,4 +1,4 @@
-"""Adversarial test runner (PRD §12.4) — drives red-team scenarios against the auditor's inline gate.
+"""Adversarial test runner (PRD §12.4) - drives red-team scenarios against the auditor's inline gate.
 
 Spins up an in-process auditor gate (mTLS) + a scripted harness via :func:`adversarial.gate_harness.gate_session`,
 runs the selected attack, and checks the gate decision against the category's ``expected_flags.json``.

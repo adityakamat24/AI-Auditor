@@ -1,4 +1,4 @@
-"""Linux cgroup-v2 freeze enforcer (PRD §9.5.3) — Linux only; verified on a Linux box / CI.
+"""Linux cgroup-v2 freeze enforcer (PRD §9.5.3) - Linux only; verified on a Linux box / CI.
 
 Pauses a run by writing ``1`` to its cgroup's ``cgroup.freeze`` (freezing the whole subtree), resumes
 with ``0``, and aborts via ``cgroup.kill`` (or SIGKILL fallback). Filesystem writes are confined to

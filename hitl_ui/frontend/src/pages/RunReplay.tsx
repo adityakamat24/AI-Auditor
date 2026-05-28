@@ -60,7 +60,7 @@ export default function RunReplay(): React.ReactElement {
     <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">
-          Replay — <span className="font-mono text-base">{bundle.run_id}</span>
+          Replay - <span className="font-mono text-base">{bundle.run_id}</span>
         </h1>
         <p className="text-sm text-gray-500 mt-1">Read-only event replay for investigation.</p>
       </div>

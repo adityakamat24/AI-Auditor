@@ -1,4 +1,4 @@
-"""Cooperative IPC enforcer (PRD §9.5.1). STUB — implemented in Phase 3.
+"""Cooperative IPC enforcer (PRD §9.5.1). STUB - implemented in Phase 3.
 
 The first, cooperative enforcement layer: signals the harness over the existing IPC channel to pause,
 resume, or abort, relying on the SDK to obey a BLOCK/abort frame. The OS-level enforcers are the backstop

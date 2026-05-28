@@ -1,4 +1,4 @@
-"""HITL notifier (PRD §9.10.4) — alert reviewers via Slack and PagerDuty.
+"""HITL notifier (PRD §9.10.4) - alert reviewers via Slack and PagerDuty.
 
 Posts a structured card to a configured Slack webhook (per-tenant or global) when a flag is routed
 for review. PagerDuty is a thin stub for critical-only; no-op unless configured. Both classes
@@ -75,7 +75,7 @@ class SlackNotifier:
 
 def _build_slack_card(flag: Flag, *, ui_url: str | None) -> dict:
     """Construct a Slack Block Kit payload for *flag*."""
-    categories_str = ", ".join(flag.asi_categories) if flag.asi_categories else "—"
+    categories_str = ", ".join(flag.asi_categories) if flag.asi_categories else "-"
     link_text = f"\n<{ui_url}|View flag>  " if ui_url else ""
     text = (
         f"*[{flag.severity.upper()}] HITL Flag Raised*\n"
@@ -126,7 +126,7 @@ class PagerDutyNotifier:
             log.debug("hitl.notifier.pagerduty.unconfigured", flag_id=str(flag.flag_id))
             return False
 
-        # Stub body — replace with real PD Events v2 POST when routing key is available.
+        # Stub body - replace with real PD Events v2 POST when routing key is available.
         log.warning(
             "hitl.notifier.pagerduty.stub",
             flag_id=str(flag.flag_id),

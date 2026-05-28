@@ -1,6 +1,6 @@
 """ASI01 Goal Hijack / Misalignment detector (PRD §9.7.1).
 
-Detects when an agent is hijacked away from its declared goal — typically via indirect prompt
+Detects when an agent is hijacked away from its declared goal - typically via indirect prompt
 injection in retrieved web/RAG/tool content. Logic:
 
 1. Indirect-injection scan over ``MemoryOp(read)`` keys/queries and tool-call outputs for known

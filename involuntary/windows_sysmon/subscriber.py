@@ -3,7 +3,7 @@
 Live wrapper around ``win32evtlog.EvtSubscribe`` for the ``Microsoft-Windows-Sysmon/Operational``
 channel. On each delivered event it renders the record to XML with ``EvtRender`` and hands the XML
 string to a user callback. Events are post-filtered by ``ProcessId`` against a set of PIDs (the
-harness process and its descendants — the observer maintains that set).
+harness process and its descendants - the observer maintains that set).
 
 All ``win32*`` (pywin32) imports are kept **inside methods** so importing this module never requires
 the Windows-only ``windows`` extra. This class is the only piece that touches the OS; it is therefore
@@ -14,14 +14,14 @@ the Windows-only ``windows`` extra. This class is the only piece that touches th
   after Sysmon is installed).
 
 See PRD §9.2.2 for the documented limitations vs the Linux eBPF backend (50-200ms latency, no
-per-read file event — file reads are approximated elsewhere via ``psutil`` polling).
+per-read file event - file reads are approximated elsewhere via ``psutil`` polling).
 """
 
 from __future__ import annotations
 
 from collections.abc import Callable
 
-# pywin32 is intentionally NOT imported at module top — it is a Windows-only optional extra.
+# pywin32 is intentionally NOT imported at module top - it is a Windows-only optional extra.
 SYSMON_CHANNEL = "Microsoft-Windows-Sysmon/Operational"
 
 
@@ -29,7 +29,7 @@ class SysmonSubscriber:
     """Streams raw Sysmon event XML for a set of process IDs via ``EvtSubscribe``.
 
     Args:
-        process_ids: PIDs to keep (the harness tree). ``None`` means *do not filter* — every Sysmon
+        process_ids: PIDs to keep (the harness tree). ``None`` means *do not filter* - every Sysmon
             event on the channel is delivered (useful for tests/diagnostics).
     """
 
@@ -99,7 +99,7 @@ class SysmonSubscriber:
         self._subscription = win32evtlog.EvtSubscribe(
             SYSMON_CHANNEL,
             win32evtlog.EvtSubscribeToFutureEvents,
-            None,  # Bookmark — None: start from now.
+            None,  # Bookmark - None: start from now.
             Callback=_on_event,
             Context=None,
             Query=None,  # Server-side XPath; we post-filter by PID in Python instead.

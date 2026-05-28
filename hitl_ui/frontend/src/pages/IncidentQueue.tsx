@@ -1,5 +1,5 @@
 /**
- * Incident queue — auto-refreshing chronological list of incidents.
+ * Incident queue - auto-refreshing chronological list of incidents.
  *
  * Refresh strategy:
  *   - Initial fetch on mount.
@@ -45,7 +45,7 @@ function StatTile({ label, value, tone, loading }: { label: string; value: numbe
       <span className={`w-2 h-10 rounded-full ${tone}`} />
       <div>
         <div className="text-[20px] font-semibold text-gray-900 dark:text-gray-100 leading-none tabular-nums">
-          {loading ? "—" : value}
+          {loading ? "-" : value}
         </div>
         <div className="text-[11px] uppercase tracking-wider text-gray-500 dark:text-gray-400 mt-1">{label}</div>
       </div>
@@ -183,7 +183,7 @@ export default function IncidentQueue(): React.ReactElement {
             </svg>
           </div>
           <p className="text-[14px] font-medium text-gray-700 dark:text-gray-300">All clear.</p>
-          <p className="text-[12px] text-gray-500 dark:text-gray-400 mt-1">No incidents match this filter — try widening the state.</p>
+          <p className="text-[12px] text-gray-500 dark:text-gray-400 mt-1">No incidents match this filter - try widening the state.</p>
         </div>
       )}
 

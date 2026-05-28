@@ -26,7 +26,7 @@ def test_module_imports_without_error() -> None:
 def test_double_import_is_idempotent() -> None:
     """Re-importing the module a second time must not raise a duplicate-timeseries error."""
     importlib.import_module("auditor.observability.metrics")
-    importlib.import_module("auditor.observability.metrics")  # second import — must be silent
+    importlib.import_module("auditor.observability.metrics")  # second import - must be silent
 
 
 def test_init_metrics_is_idempotent() -> None:

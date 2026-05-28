@@ -1,8 +1,8 @@
 /**
- * Flag detail — schema-honest. Uses only fields the backend actually returns:
+ * Flag detail - schema-honest. Uses only fields the backend actually returns:
  *   flag_id / run_id / tenant_id / severity / status / asi_categories / opened_at + the run's events.
  *
- * Visual: matches the operator console aesthetic — soft borders, clean chips, explicit text colors.
+ * Visual: matches the operator console aesthetic - soft borders, clean chips, explicit text colors.
  */
 
 import React, { useCallback, useEffect, useState } from "react";
@@ -105,11 +105,11 @@ export default function TraceDetail(): React.ReactElement {
     try {
       await postDecision(flagId, { decision, rationale: rationale || `${decision} via review` });
       setDecided(decision);
-      toast.success(`Decision recorded — ${decision}`);
+      toast.success(`Decision recorded - ${decision}`);
     } catch (e) {
       const msg = (e as Error).message;
       setError(`Decision failed: ${msg}`);
-      toast.error(`Decision failed — ${msg}`);
+      toast.error(`Decision failed - ${msg}`);
     } finally {
       setSubmitting(false);
     }
@@ -181,7 +181,7 @@ export default function TraceDetail(): React.ReactElement {
                     <span key={c} className="px-1.5 py-0.5 rounded text-[11px] bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-mono">{c}</span>
                   ))
                 ) : (
-                  <span className="text-gray-400 dark:text-gray-500">—</span>
+                  <span className="text-gray-400 dark:text-gray-500">-</span>
                 )}
               </dd>
             </div>
@@ -201,7 +201,7 @@ export default function TraceDetail(): React.ReactElement {
             <textarea
               value={rationale}
               onChange={(e) => setRationale(e.target.value)}
-              placeholder="Optional — why are you making this decision?"
+              placeholder="Optional - why are you making this decision?"
               rows={2}
               className="w-full text-[13px] rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 px-3 py-2 mb-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none"
             />

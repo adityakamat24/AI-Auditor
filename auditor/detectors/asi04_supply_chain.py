@@ -33,7 +33,7 @@ class Asi04SupplyChainDetector(Detector):
             # No pinned tool_catalog → asi04 has nothing to verify (not applicable). The dedicated
             # startup integrity check (asi04_catalog_integrity) handles the published-vs-runtime diff
             # when a catalog IS configured. Emitting NEEDS_REVIEW here floods every catalog-less run
-            # with a spurious LOW flag, which is noise — not a real safety signal.
+            # with a spurious LOW flag, which is noise - not a real safety signal.
             return []
 
         evidence: list[Evidence] = []

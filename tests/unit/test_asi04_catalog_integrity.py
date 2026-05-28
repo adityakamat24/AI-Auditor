@@ -24,7 +24,7 @@ TENANT = uuid4()
 
 
 # ---------------------------------------------------------------------------
-# Case 1 — unchanged files produce an OK verdict (no violation)
+# Case 1 - unchanged files produce an OK verdict (no violation)
 # ---------------------------------------------------------------------------
 
 
@@ -50,7 +50,7 @@ def test_no_violation_when_files_unchanged(tmp_path):
 
 
 # ---------------------------------------------------------------------------
-# Case 2 — modified file -> CRITICAL VIOLATION; aggregate yields CRITICAL Flag
+# Case 2 - modified file -> CRITICAL VIOLATION; aggregate yields CRITICAL Flag
 # ---------------------------------------------------------------------------
 
 
@@ -83,7 +83,7 @@ def test_critical_violation_when_file_modified(tmp_path):
 
 
 # ---------------------------------------------------------------------------
-# Case 3 — tool removed after publish -> CRITICAL VIOLATION
+# Case 3 - tool removed after publish -> CRITICAL VIOLATION
 # ---------------------------------------------------------------------------
 
 
@@ -115,7 +115,7 @@ def test_critical_violation_when_tool_removed(tmp_path):
 
 
 # ---------------------------------------------------------------------------
-# Case 3b — implementation file deleted from disk (FileNotFoundError path)
+# Case 3b - implementation file deleted from disk (FileNotFoundError path)
 # ---------------------------------------------------------------------------
 
 
@@ -144,7 +144,7 @@ def test_critical_violation_when_implementation_file_deleted(tmp_path):
 
 
 # ---------------------------------------------------------------------------
-# Case 4 — tool added after publish -> CRITICAL VIOLATION
+# Case 4 - tool added after publish -> CRITICAL VIOLATION
 # ---------------------------------------------------------------------------
 
 
@@ -176,7 +176,7 @@ def test_critical_violation_when_tool_added(tmp_path):
 
 
 # ---------------------------------------------------------------------------
-# CatalogIntegrityCheck convenience wrapper — smoke test
+# CatalogIntegrityCheck convenience wrapper - smoke test
 # ---------------------------------------------------------------------------
 
 

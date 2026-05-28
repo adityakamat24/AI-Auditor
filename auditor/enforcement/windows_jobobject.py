@@ -2,7 +2,7 @@
 
 Suspends / resumes / terminates a run's harness **process tree** via psutil (which wraps
 ``NtSuspendProcess``/``NtResumeProcess``). When a Job Object handle is registered for a run, ``abort``
-terminates it atomically (``TerminateJobObject`` — no orphans); otherwise it kills the psutil tree.
+terminates it atomically (``TerminateJobObject`` - no orphans); otherwise it kills the psutil tree.
 ``quarantine`` leaves the tree suspended and captures a memory dump for forensics.
 
 psutil/pywin32 are imported lazily so importing this module never requires the Windows extra.

@@ -1,4 +1,4 @@
-"""Detector calibration (PRD §9.12) — ground truth, nightly eval, audit-of-audit. STUB — Phase 6.
+"""Detector calibration (PRD §9.12) - ground truth, nightly eval, audit-of-audit. STUB - Phase 6.
 
 Continuously measures detector quality (precision/recall/FP rate) against a labeled ground-truth set,
 re-runs nightly, and audits the auditor (LLM-judge agreement vs human labels) to gate lifecycle promotion.

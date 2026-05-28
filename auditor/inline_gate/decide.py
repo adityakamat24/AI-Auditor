@@ -2,7 +2,7 @@
 
 Runs the deterministic sub-checks (OPA policy, Redis tool-budget, Presidio PII on outbound content) and
 combines them with DENY > CONFIRM > ALLOW. PII scanning is conditional (only on outbound-content tools)
-to keep the hot path fast. OPA errors fail **closed** (DENY) — we won't allow an action we can't evaluate.
+to keep the hot path fast. OPA errors fail **closed** (DENY) - we won't allow an action we can't evaluate.
 Divergence (the involuntary-channel check) joins this combiner in Phase 3.
 """
 
@@ -50,7 +50,7 @@ async def decide(event: dict, *, run_id: str, opa, pii, budget) -> GateOutcome:
     votes: dict = {}
     sub: list[tuple[str, list[str]]] = []
 
-    # 1) OPA policy — fail closed on error.
+    # 1) OPA policy - fail closed on error.
     try:
         opa_out = await opa.evaluate(opa_input(event))
     except Exception as exc:  # noqa: BLE001 - any policy-engine failure denies
@@ -62,13 +62,13 @@ async def decide(event: dict, *, run_id: str, opa, pii, budget) -> GateOutcome:
     event_type = event.get("event_type")
     tool_name = event.get("tool_name")
 
-    # 2) Tool budget — only for tool calls.
+    # 2) Tool budget - only for tool calls.
     if event_type == "tool_call.start" and tool_name:
         budget_out = await budget.check(run_id, tool_name)
         votes["budget"] = budget_out
         sub.append((budget_out["decision"], budget_out["reasons"]))
 
-    # 3) PII / secrets — only for outbound-content tools (keeps the hot path fast otherwise).
+    # 3) PII / secrets - only for outbound-content tools (keeps the hot path fast otherwise).
     if event_type == "tool_call.start" and tool_name in _OUTBOUND_TOOLS:
         args = event.get("tool_args") or {}
         text = " ".join(str(v) for v in args.values())

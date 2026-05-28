@@ -1,4 +1,4 @@
-"""HITL review queue (PRD §9.10) — Redis-backed pending-flag store.
+"""HITL review queue (PRD §9.10) - Redis-backed pending-flag store.
 
 Each enqueued flag is stored as a compact JSON record in a Redis hash keyed by
 ``hitl:queue:{tenant_id}:{flag_id}``.  A per-tenant index set

@@ -1,6 +1,6 @@
 """Optional Voyage AI embedder (external API).
 
-NOT used by default — the system is local-only (PRD §0). This stub exists so the backend is an
+NOT used by default - the system is local-only (PRD §0). This stub exists so the backend is an
 additive change. Enable with ``EMBEDDING_BACKEND=voyage`` and a Voyage key once implemented.
 """
 

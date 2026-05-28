@@ -1,10 +1,10 @@
-# OpenTelemetry Collector config — AI Auditor Phase 7
+# OpenTelemetry Collector config - AI Auditor Phase 7
 #
 # Receivers  : OTLP (gRPC :4317, HTTP :4318)
 # Processors : batch (memory-efficient flush)
 # Exporters  :
-#   prometheus — exposes /metrics on :8889 so Prometheus can scrape the collector's own metrics
-#   logging    — structured debug output to collector stdout (verbosity: normal in prod)
+#   prometheus - exposes /metrics on :8889 so Prometheus can scrape the collector's own metrics
+#   logging    - structured debug output to collector stdout (verbosity: normal in prod)
 #
 # Pipelines:
 #   traces  → otlp → batch → logging

@@ -1,6 +1,6 @@
 """Unit tests for auditor.api.admin (calibration endpoints).
 
-All database access is replaced with in-memory fakes via ``app.dependency_overrides`` — no live
+All database access is replaced with in-memory fakes via ``app.dependency_overrides`` - no live
 DB required.  A fresh FastAPI app with ``admin_router`` mounted is created per test.
 
 Covers:

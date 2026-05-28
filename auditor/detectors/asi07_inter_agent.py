@@ -1,8 +1,8 @@
 """ASI07 Insecure Inter-Agent Communication detector (PRD §9.7.7).
 
 Deterministic HMAC-presence check on the intra-agent bus: every ``InterAgentMessage`` must carry a
-non-empty HMAC ``signature``. An unsigned (empty) signature means the sender's identity is unproven —
-the door for forged/man-in-the-middle messages — so it is a VIOLATION.
+non-empty HMAC ``signature``. An unsigned (empty) signature means the sender's identity is unproven -
+the door for forged/man-in-the-middle messages - so it is a VIOLATION.
 
 (Full signature *verification* against the sender's key lands with ``auditor/auth/`` in a later phase;
 here we enforce presence, which is the cheap, high-precision first gate.)

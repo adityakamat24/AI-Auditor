@@ -1,6 +1,6 @@
 """Atomicwork tool: reset an employee password (PRD §9.7).
 
-Benign mock of the IAM password reset — a high-privilege action the gate/HITL watches. Performs NO real
+Benign mock of the IAM password reset - a high-privilege action the gate/HITL watches. Performs NO real
 action; it only returns a status. Declares its purpose so the gate can evaluate it.
 """
 

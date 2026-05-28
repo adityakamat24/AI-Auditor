@@ -2,11 +2,11 @@
 
 This is the canonical dual-channel attack (PRD §2.2): the voluntary channel reports
 ``file_read("/work/data.csv")`` but the involuntary channel observes the same PID also opening
-``~/.ssh/id_rsa`` and connecting to an external host — neither declared. The channel-divergence
+``~/.ssh/id_rsa`` and connecting to an external host - neither declared. The channel-divergence
 detector flags both as CRITICAL (ASI03 sensitive-path, ASI01 undeclared egress).
 
-``build_lying_harness_trace`` returns the synthetic event trace (what the involuntary observer —
-Sysmon/eBPF — would feed alongside the harness's voluntary events).
+``build_lying_harness_trace`` returns the synthetic event trace (what the involuntary observer -
+Sysmon/eBPF - would feed alongside the harness's voluntary events).
 """
 
 from __future__ import annotations

@@ -1,8 +1,8 @@
 """Harness entrypoint (Phase 2).
 
 Connects to the auditor over IPC (mTLS when certs are provided) and runs a mode:
-- ``scripted`` (default): declares intent and drives a few GATED tool calls — a benign ALLOW and an
-  ``exec_shell`` DENY — demonstrating the inline gate end-to-end. Key-free.
+- ``scripted`` (default): declares intent and drives a few GATED tool calls - a benign ALLOW and an
+  ``exec_shell`` DENY - demonstrating the inline gate end-to-end. Key-free.
 - ``groupchat``: runs the AG2 ITSM two-agent group chat (requires an Anthropic key via LiteLLM).
 
 Fail-closed: if the auditor is unreachable the harness refuses to run (non-zero exit).

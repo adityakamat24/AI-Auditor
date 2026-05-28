@@ -1,6 +1,6 @@
 """Unit tests for auditor.api.replay (PRD §9.11.3).
 
-All tests build Trace objects in-memory — no database required.
+All tests build Trace objects in-memory - no database required.
 """
 
 from __future__ import annotations

@@ -1,4 +1,4 @@
-"""Linux seccomp syscall-deny enforcer (PRD §9.5.2). STUB — implemented in Phase 3 (Linux).
+"""Linux seccomp syscall-deny enforcer (PRD §9.5.2). STUB - implemented in Phase 3 (Linux).
 
 OS-level backstop on Linux: installs/updates a seccomp-bpf filter for the harness so denied syscalls
 (e.g. ``connect``, ``execve``) are blocked at the kernel boundary regardless of SDK cooperation. The

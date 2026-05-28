@@ -1,4 +1,4 @@
-"""Unit tests for POST /admin/users/{user_id}/role — Phase-7 acceptance.
+"""Unit tests for POST /admin/users/{user_id}/role - Phase-7 acceptance.
 
 Acceptance criterion (PRD §15 Phase 7):
   "a reviewer cannot escalate to admin without an admin granting the role."
@@ -12,7 +12,7 @@ Covers:
   - Unknown user_id → 404.
   - Previous role is returned in the response.
 
-All DB access is replaced with in-memory fakes via dependency_overrides — no live DB required.
+All DB access is replaced with in-memory fakes via dependency_overrides - no live DB required.
 """
 
 from __future__ import annotations

@@ -1,4 +1,4 @@
-"""Linux involuntary backend — eBPF loader/reader (PRD §9.2.1).
+"""Linux involuntary backend - eBPF loader/reader (PRD §9.2.1).
 
 Implements :class:`~auditor.involuntary.base.InvoluntaryObserver` on Linux on top of the Rust + Aya
 programs in ``involuntary/linux_ebpf/``. The real loader will:

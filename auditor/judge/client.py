@@ -1,8 +1,8 @@
 """LLM judge client (PRD §9.8).
 
 Two implementations behind one ABC:
-- :class:`LiteLLMJudge` — live Anthropic Haiku via the LiteLLM proxy (full impl Phase 4).
-- :class:`OfflineStubJudge` — deterministic, no network; used by unit tests and whenever no Anthropic
+- :class:`LiteLLMJudge` - live Anthropic Haiku via the LiteLLM proxy (full impl Phase 4).
+- :class:`OfflineStubJudge` - deterministic, no network; used by unit tests and whenever no Anthropic
   key is configured. This is what makes the rest of the system runnable/testable without a key.
 
 :func:`get_judge` selects the live client only when a real key is present.
@@ -83,7 +83,7 @@ class JudgeClient(ABC):
 class OfflineStubJudge(JudgeClient):
     """Deterministic, network-free judge for tests and no-key dev.
 
-    Uses a tiny keyword heuristic — enough to make adversarial fixtures with explicit injection
+    Uses a tiny keyword heuristic - enough to make adversarial fixtures with explicit injection
     markers resolve to VIOLATION while clean traces resolve to OK. NOT a substitute for the real
     judge; the live judge replaces it as soon as a key is configured.
     """
@@ -122,7 +122,7 @@ class LiteLLMJudge(JudgeClient):
 
     Calls the configured Haiku judge model; on ``abstain`` it escalates once to the stronger
     crosscheck model (Sonnet). Any transport/parse failure degrades to a NEEDS_REVIEW abstain
-    rather than raising — the orchestrator treats that as "route to a human", never silent-OK.
+    rather than raising - the orchestrator treats that as "route to a human", never silent-OK.
     """
 
     def __init__(self, settings: Settings) -> None:
@@ -257,7 +257,7 @@ def get_judge(settings: Settings | None = None, *, cache: object | None = None) 
 
     Pass ``cache`` (a VerdictCache) to wrap the judge in a read-through cache. When the live judge is
     selected and no explicit cache is given, a process-wide in-memory cache dedupes calls (§9.8). The
-    offline stub is left uncached — it is pure and free, so caching would only add cross-test coupling.
+    offline stub is left uncached - it is pure and free, so caching would only add cross-test coupling.
     """
     settings = settings or get_settings()
     base: JudgeClient = LiteLLMJudge(settings) if settings.judge_live else OfflineStubJudge()

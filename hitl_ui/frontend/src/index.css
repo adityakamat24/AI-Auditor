@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ─── Base — make light and dark surfaces consistent across the whole app ─── */
+/* ─── Base - make light and dark surfaces consistent across the whole app ─── */
 @layer base {
   html {
     color-scheme: light dark;

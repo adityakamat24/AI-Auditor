@@ -1,4 +1,4 @@
-"""Calibration metrics (PRD §9.12) — confusion matrix → precision/recall/F1/FP-rate.
+"""Calibration metrics (PRD §9.12) - confusion matrix → precision/recall/F1/FP-rate.
 
 Pure, dependency-free: turns ``(labeled_violation, predicted_violation)`` pairs into per-category detector
 quality metrics used by the nightly run and the lifecycle gates. Binary task per ASI category: positive =
@@ -55,7 +55,7 @@ class ConfusionMatrix:
 
     @property
     def has_positives(self) -> bool:
-        """Whether any labeled VIOLATION exists — precision is only meaningful then."""
+        """Whether any labeled VIOLATION exists - precision is only meaningful then."""
         return (self.tp + self.fn) > 0
 
     def as_dict(self) -> dict:

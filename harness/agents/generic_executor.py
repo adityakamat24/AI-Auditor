@@ -1,7 +1,7 @@
-"""Generic executor agent (PRD §9) — runs the generic tool set.
+"""Generic executor agent (PRD §9) - runs the generic tool set.
 
 General-purpose audited agent wired to the safe generic tools (HTTP get/post, sandboxed file read/write).
-``exec_shell`` is deliberately excluded — it is blocked by policy. Every tool call flows through the
+``exec_shell`` is deliberately excluded - it is blocked by policy. Every tool call flows through the
 Telemetry inline gate via :func:`harness.agents.base.build_gated_agent`.
 """
 

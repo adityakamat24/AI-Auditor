@@ -1,4 +1,4 @@
-"""Windows involuntary backend — Sysmon subscriber + translator (PRD §9.2.2).
+"""Windows involuntary backend - Sysmon subscriber + translator (PRD §9.2.2).
 
 Implements :class:`~auditor.involuntary.base.InvoluntaryObserver` on Windows. On ``start`` it resolves
 the harness process tree (the harness PID plus its descendants via ``psutil``), starts a
@@ -67,14 +67,14 @@ class SysmonObserver(InvoluntaryObserver):
 
         self._loop = asyncio.get_running_loop()
         self._run_id = run_id
-        self._tenant_id = run_id  # see docstring — placeholder until run-context wiring.
+        self._tenant_id = run_id  # see docstring - placeholder until run-context wiring.
 
         process_ids = self._process_tree(harness_pid)
         subscriber = SysmonSubscriber(process_ids=process_ids)
 
         def _on_xml(xml_str: str) -> None:
             # Called on a pywin32 thread. Do the (pure) translation here, then hand the finished
-            # event to the loop thread — asyncio.Queue is not thread-safe.
+            # event to the loop thread - asyncio.Queue is not thread-safe.
             try:
                 event = translate(xml_str, run_id=run_id, tenant_id=self._tenant_id)
             except Exception as exc:  # noqa: BLE001 - a malformed record must not kill the stream

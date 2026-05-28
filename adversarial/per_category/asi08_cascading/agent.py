@@ -40,7 +40,7 @@ def build_attack_trace(run_id: UUID, tenant_id: UUID) -> Trace:
             ToolCallEnd(**_base(), agent_id=agent_id, tool_call_id=call_id, status="error", error="boom"),
         ]
 
-    # 6 consecutive errors on the same tool — exceeds threshold K=5.
+    # 6 consecutive errors on the same tool - exceeds threshold K=5.
     events: list = []
     for _ in range(6):
         events.extend(_errored_call("flaky_tool"))

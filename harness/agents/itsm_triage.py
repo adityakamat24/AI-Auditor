@@ -1,4 +1,4 @@
-"""ITSM triage agent (PRD §9) — classifies and routes incoming tickets.
+"""ITSM triage agent (PRD §9) - classifies and routes incoming tickets.
 
 Demo agent wired to the read/triage Atomicwork tools (KB search, create ticket, employee lookup). Every
 tool call flows through the Telemetry inline gate via :func:`harness.agents.base.build_gated_agent`.

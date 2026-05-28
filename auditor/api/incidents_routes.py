@@ -1,4 +1,4 @@
-"""Incident API routes (PRD §9.10.5) — Phase 8 implementation.
+"""Incident API routes (PRD §9.10.5) - Phase 8 implementation.
 
 Endpoints:
   GET  /incidents                      list incidents (filter by state/severity)
@@ -7,15 +7,15 @@ Endpoints:
   POST /incidents/{id}/comments        add a comment
   POST /incidents/{id}/action-items    add an action item
 
-Router name: ``incident_router`` — registered by ``auditor/main.py``; do NOT call
+Router name: ``incident_router`` - registered by ``auditor/main.py``; do NOT call
 ``app.include_router`` here.
 
-Architecture note — DB-free seams for testing
+Architecture note - DB-free seams for testing
 ---------------------------------------------
 All database access goes through module-level helper functions (``_get_incident``,
 ``_list_incidents``, etc.) that accept a ``session`` argument.  Tests override the
 ``get_db_session`` dependency via ``app.dependency_overrides`` without touching any real
-database — the same pattern as ``hitl_routes.py``.
+database - the same pattern as ``hitl_routes.py``.
 """
 
 from __future__ import annotations
@@ -296,7 +296,7 @@ async def transition_incident(
     except IncidentTransitionError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
 
-    # _get_incident's SELECT already autobegan the transaction — don't call session.begin()
+    # _get_incident's SELECT already autobegan the transaction - don't call session.begin()
     # again (raises InvalidRequestError). The state-machine mutations on `incident` are tracked
     # by the session; just commit.
     await session.commit()

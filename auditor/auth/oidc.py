@@ -1,4 +1,4 @@
-"""OIDC integration (PRD §11.1). STUB — implemented in Phase 7.
+"""OIDC integration (PRD §11.1). STUB - implemented in Phase 7.
 
 Optional single sign-on: validates OIDC ID tokens from an external IdP and maps claims to local roles. Uses
 ``authlib`` (the ``[auth]`` extra), imported lazily inside the methods so this module imports without it.
@@ -18,7 +18,7 @@ class OidcAuthenticator:
 
     async def verify(self, id_token: str) -> dict:
         """Validate an OIDC ID token and return the mapped principal claims."""
-        # from authlib.jose import jwt  # lazy — Phase 7, [auth] extra
+        # from authlib.jose import jwt  # lazy - Phase 7, [auth] extra
         raise NotImplementedError("OIDC integration lands in Phase 7")
 
 

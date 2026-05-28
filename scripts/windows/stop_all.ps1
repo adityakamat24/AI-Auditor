@@ -6,7 +6,7 @@ Set-Location $root
 
 function Stop-Pid([string]$label, [string]$pidFile) {
     if (-not (Test-Path $pidFile)) { Write-Host "$label : no pid file (skipped)"; return }
-    $procId = (Get-Content $pidFile -Raw).Trim()  # $pid is a PowerShell automatic var — don't reuse it
+    $procId = (Get-Content $pidFile -Raw).Trim()  # $pid is a PowerShell automatic var - don't reuse it
     if (-not $procId) { Remove-Item $pidFile -Force; return }
     try {
         # Kill the whole process tree (npm spawns node + esbuild children; uvicorn may spawn workers).

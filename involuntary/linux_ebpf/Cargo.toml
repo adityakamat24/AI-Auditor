@@ -1,4 +1,4 @@
-# Phase 3 scaffold — these eBPF programs compile and run on Linux only (verified in Phase 3/CI).
+# Phase 3 scaffold - these eBPF programs compile and run on Linux only (verified in Phase 3/CI).
 # Do NOT attempt to build on Windows; this manifest exists so the seam is in the tree.
 [package]
 name = "auditor-ebpf"

@@ -3,7 +3,7 @@
  *
  * Layout: two-pane workspace. Left = agent conversation thread; right = live auditor panel showing
  * pipeline stages, detector verdicts, judge reasoning, and HITL decisions for the currently selected
- * agent turn. The right pane is the product surface — security operators read it left-to-right
+ * agent turn. The right pane is the product surface - security operators read it left-to-right
  * (top of pane to bottom) to understand what the agent did and what the auditor concluded.
  *
  * Chat state lives in ChatContext so the thread + any pending audits survive tab navigation.
@@ -123,7 +123,7 @@ function extractToolCalls(events: AgentEvent[]): ToolCall[] {
   return calls;
 }
 
-/** Human-readable tool name (Claude-Code style — "Read" not "file_read"). */
+/** Human-readable tool name (Claude-Code style - "Read" not "file_read"). */
 function toolDisplayName(name: string): string {
   const map: Record<string, string> = {
     file_read:  "Read",
@@ -145,7 +145,7 @@ function formatToolArgs(name: string, args: Record<string, unknown> | null): str
   if (name === "http_get" || name === "http_post") return String(args.url ?? "");
   if (name === "send_email") {
     const to = String(args.to ?? args.recipient ?? "?");
-    const subj = args.subject ? ` — ${String(args.subject)}` : "";
+    const subj = args.subject ? ` - ${String(args.subject)}` : "";
     return `${to}${subj}`;
   }
   if (name === "exec_shell") {
@@ -161,7 +161,7 @@ function formatToolArgs(name: string, args: Record<string, unknown> | null): str
 /* ───────────────────────── markdown renderer ───────────────────────── */
 
 /**
- * Tailwind-styled markdown — overrides every block element so the agent's response renders with the
+ * Tailwind-styled markdown - overrides every block element so the agent's response renders with the
  * same typography scale as the rest of the console (no Typography plugin needed). Code blocks use a
  * dark slab in both themes for consistency; inline code uses a soft chip.
  */
@@ -331,13 +331,13 @@ function AgentCard({
       </div>
       {/* body */}
       <div className="px-4 py-3">
-        {/* Tool calls — Claude-Code-style vertical list, chronologically before the response */}
+        {/* Tool calls - Claude-Code-style vertical list, chronologically before the response */}
         {tools.length > 0 && (
           <div className="space-y-1 mb-3">
             {tools.map((t, i) => <ToolCallRow key={i} call={t} />)}
           </div>
         )}
-        {/* Final response — proper markdown */}
+        {/* Final response - proper markdown */}
         {response ? (
           <MarkdownText text={response} />
         ) : tools.length > 0 ? (
@@ -522,15 +522,15 @@ function PipelineRow({ turn }: { turn: AgentTurn }) {
       </h3>
       <div className="flex items-start gap-1">
         <PipelineStage label="Dispatched" sub={turn.runId.slice(0, 8)} state={dispatched} />
-        <PipelineStage label="Sampled" sub={state?.sampler ? `tier ${state.sampler.tier}` : "—"} state={sampled} />
+        <PipelineStage label="Sampled" sub={state?.sampler ? `tier ${state.sampler.tier}` : "-"} state={sampled} />
         <PipelineStage
           label="Detected"
-          sub={state?.checks ? `${Object.values(state.checks).reduce((a, c) => a + c.verdicts.length, 0)} verdicts` : "—"}
+          sub={state?.checks ? `${Object.values(state.checks).reduce((a, c) => a + c.verdicts.length, 0)} verdicts` : "-"}
           state={detected}
         />
         <PipelineStage
           label="Decided"
-          sub={state?.audited ? (state.flag ? "flagged" : "clean") : "—"}
+          sub={state?.audited ? (state.flag ? "flagged" : "clean") : "-"}
           state={decided}
         />
       </div>
@@ -558,11 +558,11 @@ function DecisionPanel({ turn }: { turn: AgentTurn }) {
     try {
       await postDecision(flagId, { decision, rationale: `via console at ${new Date().toLocaleTimeString()}` });
       setRecorded(decision);
-      toast.success(`Decision recorded — ${decision}`);
+      toast.success(`Decision recorded - ${decision}`);
     } catch (e) {
       const msg = (e as Error).message;
       setErr(msg);
-      toast.error(`Decision failed — ${msg}`);
+      toast.error(`Decision failed - ${msg}`);
     } finally {
       setBusy(null);
     }

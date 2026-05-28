@@ -1,6 +1,6 @@
 """Unit tests for auditor.api.incidents_routes.
 
-All database access is replaced with in-memory fakes via ``app.dependency_overrides`` — no live
+All database access is replaced with in-memory fakes via ``app.dependency_overrides`` - no live
 DB required.  A fresh FastAPI app with ``incident_router`` mounted is created per test class.
 
 Covers:
@@ -151,7 +151,7 @@ class _FakeSession:
         elif hasattr(obj, "action_id"):
             self._action_items.append(obj)
         elif hasattr(obj, "incident_id") and hasattr(obj, "state"):
-            # Updated incident — replace in list.
+            # Updated incident - replace in list.
             self._incidents = [
                 o for o in self._incidents
                 if str(getattr(o, "incident_id", "")) != str(getattr(obj, "incident_id", ""))
@@ -317,7 +317,7 @@ class TestTransitionIncident:
         assert resp.json()["state"] == "RESOLVED"
 
     def test_reviewer_gets_422_on_resolve(self):
-        """Reviewer cannot move to RESOLVED — enforced by state machine inside the route."""
+        """Reviewer cannot move to RESOLVED - enforced by state machine inside the route."""
         inc = _make_incident(state="CONTAINED")
         app = _make_app(incidents=[inc])
         resp = self._post(app, INCIDENT_ID, {"target": "RESOLVED"}, role="reviewer")

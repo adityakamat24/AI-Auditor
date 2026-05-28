@@ -156,7 +156,7 @@ def _make_app(rows: list | None = None) -> FastAPI:
 
 
 class TestExample1RunsByMemoryProvenance:
-    """§9.11.4 example 1 — documented partial mapping to events."""
+    """§9.11.4 example 1 - documented partial mapping to events."""
 
     def test_compiles_to_select_with_run_id_filter(self):
         """The query compiles to a parameterized SELECT on events with a run_id WHERE clause."""
@@ -232,7 +232,7 @@ class TestExample2FlagsWithTool:
         assert "now-24h" not in sql
 
     def test_evidence_tool_name_field_accepted_on_flags(self):
-        """evidence.event.tool_name is accepted (documented partial — maps to TRUE)."""
+        """evidence.event.tool_name is accepted (documented partial - maps to TRUE)."""
         q = Query(resource="flags", filter={"evidence.event.tool_name": "exec_shell"})
         stmt, _ = build_select(q)
         # Should compile without error (partial field → TRUE, no WHERE clause added).
@@ -427,7 +427,7 @@ class TestRLSTenantScope:
 
 
 class TestSearchRoute:
-    """POST /audit/search — DB-free route tests."""
+    """POST /audit/search - DB-free route tests."""
 
     def test_returns_seeded_rows(self):
         """The endpoint returns the rows produced by the fake session."""

@@ -1,4 +1,4 @@
-"""Trace sampler (PRD §9.6.1) — stratified + adaptive + always-on selection.
+"""Trace sampler (PRD §9.6.1) - stratified + adaptive + always-on selection.
 
 Three tiers:
 - **L1** always-audit hard triggers: channel divergence, critical cheap-risk score, sensitive data
@@ -129,7 +129,7 @@ class Sampler:
         self._critical_risk_threshold = critical_risk_threshold
 
     def decide(self, run_id: UUID, tenant_id: UUID, signals: RunSignals) -> SamplerDecision:
-        # L1 — always-audit hard triggers.
+        # L1 - always-audit hard triggers.
         if signals.channel_divergence:
             return SamplerDecision("L1", "channel divergence", True, True)
         if signals.cheap_risk_score >= self._critical_risk_threshold:
@@ -141,7 +141,7 @@ class Sampler:
         if signals.tenant_recent_incident_count > 0:
             return SamplerDecision("L1", "recent tenant incidents", True, True)
 
-        # L2 — stratified deterministic sample.
+        # L2 - stratified deterministic sample.
         rate = self._policy.sample_rate_for(tenant_id, signals.tool_category)
         bucket = stable_hash(f"{tenant_id}:{signals.tool_category}:{run_id}") % 10_000
         if bucket < int(rate * 10_000):

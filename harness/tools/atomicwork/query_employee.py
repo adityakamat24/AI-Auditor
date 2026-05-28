@@ -1,6 +1,6 @@
 """Atomicwork tool: query an employee record (PRD §9.7).
 
-Benign lookup against a mocked directory: returns a canned employee record. No declared purpose — a
+Benign lookup against a mocked directory: returns a canned employee record. No declared purpose - a
 read-only directory lookup.
 """
 

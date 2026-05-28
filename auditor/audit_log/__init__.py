@@ -1,4 +1,4 @@
-"""Tamper-evident audit log (PRD §9.11) — write, verify, redact. STUB — Phase 5.
+"""Tamper-evident audit log (PRD §9.11) - write, verify, redact. STUB - Phase 5.
 
 An append-only, hash-chained record of every decision (gate, verdict, HITL action) for compliance and
 replay. The writer chains entries; the verifier validates the chain; the redactor handles GDPR erasure

@@ -1,4 +1,4 @@
-"""initial schema — full §8.1 + scattered tables, pgvector + pgcrypto extensions, RLS enabled
+"""initial schema - full §8.1 + scattered tables, pgvector + pgcrypto extensions, RLS enabled
 
 Revision ID: 0001
 Revises:

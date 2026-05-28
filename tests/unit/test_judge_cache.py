@@ -57,7 +57,7 @@ async def test_cached_judge_distinguishes_distinct_slices() -> None:
 
 
 async def test_cached_judge_hit_rate_exceeds_target() -> None:
-    # Two distinct slices, each repeated — mimics repeated test runs touching the same traces.
+    # Two distinct slices, each repeated - mimics repeated test runs touching the same traces.
     judge = CachedJudge(_CountingJudge(), InMemoryVerdictCache())
     for slice_text in ("trace A", "trace A", "trace A", "trace B", "trace B"):
         await judge.judge(category="ASI01", rubric="r", trace_slice=slice_text)

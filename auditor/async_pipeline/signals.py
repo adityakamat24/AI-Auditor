@@ -1,4 +1,4 @@
-"""Cheap pre-audit signals (PRD §9.6.1) — fast heuristics that drive the sampler's tier decision.
+"""Cheap pre-audit signals (PRD §9.6.1) - fast heuristics that drive the sampler's tier decision.
 
 The whole point of sampling is that the *expensive* deep audit (detectors + LLM judge) runs on a fraction
 of runs, while cheap signals force an always-audit (L1) on anything that looks risky. This computes those

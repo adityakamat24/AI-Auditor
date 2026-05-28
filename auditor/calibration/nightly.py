@@ -2,7 +2,7 @@
 
 Replays the ground-truth corpus through the current detectors (including the LLM judge at the current
 prompt version), computes a per-ASI-category confusion matrix → precision/recall/F1, persists a
-``calibration_runs`` row, and — the safety mechanism — **disables a detector's blocking authority** when
+``calibration_runs`` row, and - the safety mechanism - **disables a detector's blocking authority** when
 its category precision falls below the configured threshold (default 0.85). Run as:
 
     python -m auditor.calibration.nightly

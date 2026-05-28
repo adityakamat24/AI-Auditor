@@ -1,7 +1,7 @@
 """End-to-end inline gate over mTLS: harness Telemetry SDK <-> auditor IpcServer + GateDispatcher.
 
 Exercises Phase-2 acceptance on the gate path: a safe tool call is ALLOWed, exec_shell is DENYed,
-and a same-tool loop is DENYed by the budget enforcer — all over a real mTLS connection, with the
+and a same-tool loop is DENYed by the budget enforcer - all over a real mTLS connection, with the
 events + decisions persisted to Postgres.
 """
 
@@ -100,7 +100,7 @@ async def test_gate_end_to_end_over_mtls(tmp_path) -> None:
             async with tel.tool_call(agent_id, "exec_shell", {"cmd": "rm -rf /"}):
                 pass
 
-        # DENY: same tool in a tight loop (budget enforcer) — must trip well before 60 calls.
+        # DENY: same tool in a tight loop (budget enforcer) - must trip well before 60 calls.
         loop_denied = False
         for _ in range(60):
             try:

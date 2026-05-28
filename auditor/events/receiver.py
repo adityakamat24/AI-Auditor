@@ -1,4 +1,4 @@
-"""Voluntary event receiver — ingests SDK frames over IPC (PRD §9). STUB — implemented in Phase 2/3.
+"""Voluntary event receiver - ingests SDK frames over IPC (PRD §9). STUB - implemented in Phase 2/3.
 
 The receiver terminates the harness IPC connection, decodes protobuf event frames, validates them into
 the pydantic event models, and hands them to the event store + inline gate. Phase 2 wires the voluntary

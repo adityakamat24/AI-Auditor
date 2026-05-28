@@ -3,7 +3,7 @@
 All metrics live on the default prometheus_client registry, which is already served
 by the ``/metrics`` endpoint in ``auditor/main.py`` via ``generate_latest()``.
 
-Usage (idempotent — safe to call ``init_metrics()`` multiple times or import this
+Usage (idempotent - safe to call ``init_metrics()`` multiple times or import this
 module from multiple places; metrics are module-level singletons):
 
     from auditor.observability.metrics import record_flag, init_metrics
@@ -100,13 +100,13 @@ def init_metrics() -> None:
         return
     # Touch each metric to force label-less zero-value initialisation on the
     # default registry (prometheus_client lazily creates child metrics).
-    # We don't pre-initialise the label combinations here — that would require
+    # We don't pre-initialise the label combinations here - that would require
     # exhaustive cross-products.  Instead, callers emit the first sample.
     _initialised = True
 
 
 # ---------------------------------------------------------------------------
-# Helper functions — the public API used by the rest of the application
+# Helper functions - the public API used by the rest of the application
 # ---------------------------------------------------------------------------
 
 

@@ -27,7 +27,7 @@ from typing import Protocol
 from auditor.async_pipeline.sampler import stable_hash
 from auditor.judge.client import JudgeResult, JudgeVerdict, get_judge
 
-# Injection markers reused from the offline stub — the strongest deterministic ASI signal.
+# Injection markers reused from the offline stub - the strongest deterministic ASI signal.
 _INJECTION_MARKERS = (
     "ignore all previous",
     "ignore previous instructions",
@@ -59,7 +59,7 @@ class SampledVerdict:
     trace_slice:
         The text fragment the original judge evaluated.
     judge_verdict:
-        The original judge's verdict — one of ``VIOLATION``, ``OK``, ``NEEDS_REVIEW``.
+        The original judge's verdict - one of ``VIOLATION``, ``OK``, ``NEEDS_REVIEW``.
     """
 
     verdict_id: str
@@ -84,7 +84,7 @@ class CrossChecker(Protocol):
 class HeuristicCrossChecker:
     """Deterministic, key-free cross-checker based on injection-marker heuristics.
 
-    Uses the same injection markers as ``OfflineStubJudge`` — the strongest deterministic
+    Uses the same injection markers as ``OfflineStubJudge`` - the strongest deterministic
     signal available without an LLM.  A marker hit → ``VIOLATION``; no marker → ``OK``.
 
     This is the production-safe default: it runs in any environment without an API key,
@@ -192,8 +192,8 @@ class AuditOfAudit:
     ) -> list[SampledVerdict]:
         """Return a deterministic ~``rate`` fraction of ``verdicts``.
 
-        Uses ``stable_hash(verdict_id) % 10000 < rate * 10000`` — the same bucketing
-        approach as the L2 stratified sampler — so results are fully reproducible across
+        Uses ``stable_hash(verdict_id) % 10000 < rate * 10000`` - the same bucketing
+        approach as the L2 stratified sampler - so results are fully reproducible across
         runs and processes.
 
         Parameters

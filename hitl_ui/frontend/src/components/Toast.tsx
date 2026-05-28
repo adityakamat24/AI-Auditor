@@ -1,5 +1,5 @@
 /**
- * Lightweight toast system — no external deps. Stacks up to 3 toasts in the bottom-right;
+ * Lightweight toast system - no external deps. Stacks up to 3 toasts in the bottom-right;
  * each auto-dismisses after 4 seconds (5s for errors so the message is readable).
  *
  * Usage:

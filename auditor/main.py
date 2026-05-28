@@ -149,7 +149,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 def create_app() -> FastAPI:
     app = FastAPI(title="AI Auditor", version=__version__, lifespan=lifespan)
 
-    # CORS — the Vite dev server runs on a different origin (5173) and sends OPTIONS preflights for
+    # CORS - the Vite dev server runs on a different origin (5173) and sends OPTIONS preflights for
     # any JSON POST. Without this, the preflight 405s and the browser refuses to send the real request.
     # Allowed origins are explicit (no wildcard) so credentials work; tighten further in production.
     app.add_middleware(

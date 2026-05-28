@@ -7,7 +7,7 @@ Pure, dependency-free chain math so it is unit-testable without a database:
   32 zero bytes.
 
 :func:`verify_chain` recomputes the chain forward from genesis and reports the first entry whose stored
-``chain_hash`` doesn't match — catching any insertion, deletion, reorder, or hash mutation.
+``chain_hash`` doesn't match - catching any insertion, deletion, reorder, or hash mutation.
 """
 
 from __future__ import annotations
@@ -27,7 +27,7 @@ def compute_payload_hash(payload: dict) -> bytes:
 
 
 def compute_chain_hash(prev_chain_hash: bytes, payload_hash: bytes) -> bytes:
-    """sha256(prev_chain_hash || payload_hash) — links this entry to the previous one."""
+    """sha256(prev_chain_hash || payload_hash) - links this entry to the previous one."""
     return hashlib.sha256(prev_chain_hash + payload_hash).digest()
 
 

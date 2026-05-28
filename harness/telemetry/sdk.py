@@ -1,11 +1,11 @@
-"""Telemetry SDK (harness side) — PRD §9.1.
+"""Telemetry SDK (harness side) - PRD §9.1.
 
 Connects to the auditor over the platform transport (mTLS when an SSLContext is supplied) and provides:
-- ``declare_intent`` — one-way intent event.
-- ``tool_call`` — async context manager that **gates** the call: emits a ToolCallStart, requests an
+- ``declare_intent`` - one-way intent event.
+- ``tool_call`` - async context manager that **gates** the call: emits a ToolCallStart, requests an
   inline-gate decision (100 ms timeout), raises :class:`GateDeniedError` on DENY, yields the decision on
   ALLOW/CONFIRM, and emits a ToolCallEnd on exit. **Fail-closed**: timeout / unreachable auditor → DENY.
-- ``llm_call`` / ``memory_op`` — one-way events.
+- ``llm_call`` / ``memory_op`` - one-way events.
 
 All frames are serialized on one connection guarded by a lock so a request's response can't be
 interleaved with another send.

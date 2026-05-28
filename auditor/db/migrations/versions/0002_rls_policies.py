@@ -11,7 +11,7 @@ For every table in RLS_TABLES that carries a ``tenant_id`` column this revision:
    superuser, PostgreSQL's RLS machinery is *not* bypassed when the session switches to it, which
    is the key requirement for row-level security to take effect.
 
-   The connecting role (``auditor``) is a superuser that always bypasses RLS — that is the
+   The connecting role (``auditor``) is a superuser that always bypasses RLS - that is the
    "system / ingest" path.  When an API request wants tenant isolation, ``tenant_scope()`` calls
    ``SET LOCAL ROLE auditor_api`` so the remainder of the transaction runs as a non-superuser and
    the policy is enforced.
@@ -26,7 +26,7 @@ For every table in RLS_TABLES that carries a ``tenant_id`` column this revision:
 The policy expression uses ``current_setting('app.tenant_id', true)`` (the ``true`` is
 *missing_ok*) which returns ``NULL`` rather than raising an error when the GUC has not been set
 for the current session, allowing existing writers that never call ``tenant_scope()`` to continue
-seeing and writing all rows unimpeded — which is what keeps the 349 unit tests and the
+seeing and writing all rows unimpeded - which is what keeps the 349 unit tests and the
 audit-log / e2e integration tests green.
 """
 
@@ -46,14 +46,14 @@ depends_on: str | Sequence[str] | None = None
 # the 0001 migration.  Each gets one policy + FORCE.
 #
 # Tables deliberately excluded:
-#   - ``memory_embeddings``  — no ``tenant_id`` column (FK to memory_entries only)
-#   - ``gate_decisions``     — no ``tenant_id`` column
-#   - ``sampler_decisions``  — no ``tenant_id`` column
-#   - ``hitl_decisions``     — no ``tenant_id`` column
-#   - ``incident_comments``  — no ``tenant_id`` column
-#   - ``incident_action_items`` — no ``tenant_id`` column
-#   - ``ground_truth``       — no ``tenant_id`` column
-#   - ``calibration_runs``   — no ``tenant_id`` column
+#   - ``memory_embeddings``  - no ``tenant_id`` column (FK to memory_entries only)
+#   - ``gate_decisions``     - no ``tenant_id`` column
+#   - ``sampler_decisions``  - no ``tenant_id`` column
+#   - ``hitl_decisions``     - no ``tenant_id`` column
+#   - ``incident_comments``  - no ``tenant_id`` column
+#   - ``incident_action_items`` - no ``tenant_id`` column
+#   - ``ground_truth``       - no ``tenant_id`` column
+#   - ``calibration_runs``   - no ``tenant_id`` column
 # ---------------------------------------------------------------------------
 
 # Standard tables: ``tenant_id IS NOT NULL`` and must equal the GUC when set.

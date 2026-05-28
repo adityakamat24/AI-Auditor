@@ -2,11 +2,11 @@
 
 This is the *interactive* surface the demo needs:
 
-- ``POST /agent/runs`` — a reviewer/admin submits ``{task}`` from the UI; the auditor mints an mTLS
+- ``POST /agent/runs`` - a reviewer/admin submits ``{task}`` from the UI; the auditor mints an mTLS
   cert, spawns the harness subprocess in agent mode (real Claude via LiteLLM), and returns the new
   ``run_id``. The harness streams telemetry events back over mTLS as usual; when it disconnects, the
   existing IPC ``on_disconnect`` schedules the post-run audit (sampler → detectors → live judge → flag).
-- ``GET /agent/runs/{run_id}`` — the UI polls this to render the run as it happens: harness
+- ``GET /agent/runs/{run_id}`` - the UI polls this to render the run as it happens: harness
   process status, events as they arrive, sampler decision, verdicts grouped by the four operator
   checks, the aggregated flag, and the auto-opened incident.
 
@@ -54,7 +54,7 @@ class AgentRunRequest(BaseModel):
 
 
 def _spawn_harness(task: str, max_turns: int, tenant_id: UUID) -> dict:
-    """Mint a per-run mTLS cert, spawn the harness in agent mode, return the run info. Blocking — call
+    """Mint a per-run mTLS cert, spawn the harness in agent mode, return the run info. Blocking - call
     via :func:`asyncio.to_thread` from async handlers."""
     settings = get_settings()
     init_ca(settings.data_dir)
@@ -170,7 +170,7 @@ async def get_agent_run(
             "reason": reason,
         })
 
-    # `audited` flips true when the FULL audit pipeline is done — sampler said NONE (skipped) or the
+    # `audited` flips true when the FULL audit pipeline is done - sampler said NONE (skipped) or the
     # orchestrator finished persisting verdicts. The sampler row is written first, but the orchestrator
     # (live judge calls) takes a few more seconds; polling clients should wait for this flag.
     audit_complete = sampler is not None and (sampler.tier_fired == "NONE" or len(verdicts) > 0)

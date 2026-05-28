@@ -1,6 +1,6 @@
 # AI Auditor for Agent Sandbox
 
-A runtime security auditor for autonomous AI agents. The auditor runs as a separate OS process alongside a low-trust agent harness on the same machine, using **dual-channel telemetry** — voluntary SDK events from the harness combined with involuntary kernel-level observation (Sysmon on Windows, eBPF on Linux) — to detect attacks the harness itself might try to hide.
+A runtime security auditor for autonomous AI agents. The auditor runs as a separate OS process alongside a low-trust agent harness on the same machine, using **dual-channel telemetry** - voluntary SDK events from the harness combined with involuntary kernel-level observation (Sysmon on Windows, eBPF on Linux) - to detect attacks the harness itself might try to hide.
 
 **What it does:**
 - Gates every tool call inline (OPA policy engine + Presidio PII scanner + Redis tool-budget + channel-divergence check), targeting p99 < 5 ms.
@@ -43,7 +43,7 @@ Two independent channels observe the harness. When the voluntary report diverges
 
 | Requirement | Notes |
 |---|---|
-| Python 3.12 | Exactly 3.12 — `requires-python = ">=3.12,<3.13"` |
+| Python 3.12 | Exactly 3.12 - `requires-python = ">=3.12,<3.13"` |
 | Docker Desktop | Running. Provides Postgres, Redis, MinIO, OPA. |
 | Node 20+ | For the HITL React UI (`hitl_ui/frontend`). `start.bat` runs `npm install` on first launch. |
 | Git | Standard |
@@ -54,15 +54,15 @@ Two independent channels observe the harness. When the voluntary report diverges
 
 ## Quick Start
 
-### Windows (native — primary dev target)
+### Windows (native - primary dev target)
 
-**First time on this machine** — one command does everything (venv + deps + Docker services + migrations + seed):
+**First time on this machine** - one command does everything (venv + deps + Docker services + migrations + seed):
 
 ```bat
 .\setup.bat
 ```
 
-**Every other launch** — opens the auditor (port 8000) and the React UI (port 5173) in two console windows and opens your browser:
+**Every other launch** - opens the auditor (port 8000) and the React UI (port 5173) in two console windows and opens your browser:
 
 ```bat
 .\start.bat
@@ -72,7 +72,7 @@ Close those two windows or run `.\stop.bat` to shut everything down. Run `.\rese
 
 #### Manual / advanced
 
-`setup.bat` is `make.ps1 bootstrap` + `make.ps1 init` chained — if you want to run the steps individually:
+`setup.bat` is `make.ps1 bootstrap` + `make.ps1 init` chained - if you want to run the steps individually:
 
 ```powershell
 .\make.ps1 bootstrap   # venv + Python/Node deps + Docker backing services
@@ -93,7 +93,7 @@ The HITL UI:
 cd hitl_ui/frontend && npm install && npm run dev
 ```
 
-### Docker (backing services only — auditor and harness always run natively)
+### Docker (backing services only - auditor and harness always run natively)
 
 The auditor and harness run natively on the host; only the stateful services run in Docker. This is the only supported topology.
 

@@ -1,4 +1,4 @@
-"""Channel-divergence detector (PRD §9.4.4, §5.6) — the headline dual-channel signal.
+"""Channel-divergence detector (PRD §9.4.4, §5.6) - the headline dual-channel signal.
 
 Takes a run's events, asks the correlator which involuntary (kernel-observed) events have no matching
 voluntary declaration, and classifies each into a severity-tiered finding:

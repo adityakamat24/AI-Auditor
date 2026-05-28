@@ -16,7 +16,7 @@ dist/
 coverage.xml
 htmlcov/
 
-# Environment / secrets — NEVER commit
+# Environment / secrets - NEVER commit
 .env
 .env.*
 !.env.example
@@ -48,7 +48,7 @@ Thumbs.db
 .idea/
 .vscode/
 
-# Internal docs / notes — only the top-level README ships publicly.
+# Internal docs / notes - only the top-level README ships publicly.
 *.md
 !/README.md
 

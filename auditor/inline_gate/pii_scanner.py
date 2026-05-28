@@ -1,4 +1,4 @@
-"""PII / secret scanner for the inline gate — Presidio-backed (PRD §9.4.2).
+"""PII / secret scanner for the inline gate - Presidio-backed (PRD §9.4.2).
 
 Lazy, shared ``AnalyzerEngine`` (spaCy ``en_core_web_sm``); analysis runs in a worker thread
 (``asyncio.to_thread``) so the sync/CPU-bound NER never blocks the event loop. Decision logic:

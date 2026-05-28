@@ -1,4 +1,4 @@
-"""JWT issue/verify (PRD §11). STUB — implemented in Phase 2/7.
+"""JWT issue/verify (PRD §11). STUB - implemented in Phase 2/7.
 
 Issues and verifies the service/session JWTs used to authenticate API and IPC callers. Signing keys come
 from the secrets backend (:mod:`auditor.auth.secrets`). ``pyjwt`` is a base dep; it is imported lazily
@@ -12,13 +12,13 @@ from __future__ import annotations
 
 def issue_token(claims: dict, *, ttl_seconds: int = 3600) -> str:
     """Issue a signed JWT carrying ``claims``."""
-    # import jwt  # lazy (pyjwt) — Phase 7
+    # import jwt  # lazy (pyjwt) - Phase 7
     raise NotImplementedError("JWT issuance lands in Phase 7")
 
 
 def verify_token(token: str) -> dict:
     """Verify ``token`` and return its claims, raising on invalid/expired tokens."""
-    # import jwt  # lazy (pyjwt) — Phase 7
+    # import jwt  # lazy (pyjwt) - Phase 7
     raise NotImplementedError("JWT verification lands in Phase 7")
 
 

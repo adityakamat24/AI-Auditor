@@ -1,6 +1,6 @@
 """Unit tests for the HITL routing subsystem (PRD §9.10).
 
-All tests use fakes/stubs — no live Redis, MinIO, or Slack.
+All tests use fakes/stubs - no live Redis, MinIO, or Slack.
 asyncio_mode = auto (configured in pyproject.toml) so no @pytest.mark.asyncio.
 """
 
@@ -137,7 +137,7 @@ def _router(
 
 
 # ---------------------------------------------------------------------------
-# Router — severity dispatching
+# Router - severity dispatching
 # ---------------------------------------------------------------------------
 
 
@@ -265,7 +265,7 @@ async def test_critical_checkpoint_failure_does_not_crash():
 
 
 # ---------------------------------------------------------------------------
-# HitlQueue — fake redis (in-memory dict, async methods)
+# HitlQueue - fake redis (in-memory dict, async methods)
 # ---------------------------------------------------------------------------
 
 
@@ -534,7 +534,7 @@ async def test_pagerduty_unconfigured_returns_false():
 
 
 # ---------------------------------------------------------------------------
-# CheckpointCapture — graceful degrade
+# CheckpointCapture - graceful degrade
 # ---------------------------------------------------------------------------
 
 

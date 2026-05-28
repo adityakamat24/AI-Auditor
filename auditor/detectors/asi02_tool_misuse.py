@@ -3,7 +3,7 @@
 Deterministic, post-hoc analysis of the tool-call graph the inline gate let through:
 
 1. Build a span graph from ``ToolCallStart`` events (parent_span_id -> span_id) and detect cycles
-   (DFS) of depth >= 3 — runaway recursive tool use.
+   (DFS) of depth >= 3 - runaway recursive tool use.
 2. Same-tool burst: a single tool invoked more than ``_MAX_SAME_TOOL`` times.
 3. Dangerous compositions: ordered tool pairs from a small config (e.g. read_secret -> http_post).
 

@@ -1,5 +1,5 @@
 /**
- * Settings — sampler runtime config + demo-data reset.
+ * Settings - sampler runtime config + demo-data reset.
  *
  * Mirrors the operator console aesthetic: light surfaces, explicit text colors, generous padding.
  */
@@ -15,7 +15,7 @@ const MODES: { value: SamplerMode; title: string; blurb: string }[] = [
   { value: "every_nth", title: "Every Nth", blurb: "Audit every Nth run, deterministically." },
   { value: "interval", title: "Time interval", blurb: "Audit at most one run per N seconds." },
   { value: "always", title: "Always", blurb: "Audit every run." },
-  { value: "never", title: "Never", blurb: "Skip everything — including L1 hard triggers. Demo only." },
+  { value: "never", title: "Never", blurb: "Skip everything - including L1 hard triggers. Demo only." },
 ];
 
 function Card({ title, sub, children }: { title: string; sub?: string; children: React.ReactNode }) {
@@ -66,12 +66,12 @@ export default function Settings(): React.ReactElement {
       const applied = await updateSamplerSettings(draft);
       setSettings(applied);
       setDraft(applied);
-      setStatus(`Saved at ${new Date().toLocaleTimeString()} — applies to the next run.`);
+      setStatus(`Saved at ${new Date().toLocaleTimeString()} - applies to the next run.`);
       toast.success("Sampler settings saved");
     } catch (e) {
       const msg = (e as Error).message;
       setError(msg);
-      toast.error(`Could not save — ${msg}`);
+      toast.error(`Could not save - ${msg}`);
     } finally {
       setSaving(false);
     }
@@ -190,7 +190,7 @@ export default function Settings(): React.ReactElement {
           </label>
         )}
         {(draft.mode === "always" || draft.mode === "never") && (
-          <div className="text-[13px] text-gray-600 dark:text-gray-400">No parameter — mode applies as-is.</div>
+          <div className="text-[13px] text-gray-600 dark:text-gray-400">No parameter - mode applies as-is.</div>
         )}
       </Card>
 
@@ -254,11 +254,11 @@ export default function Settings(): React.ReactElement {
                 const r = await resetDemoData();
                 chat.reset();
                 setResetStatus(`Wiped ${r.wiped.length} tables. Chat thread cleared.`);
-                toast.success(`Session reset — wiped ${r.wiped.length} tables`);
+                toast.success(`Session reset - wiped ${r.wiped.length} tables`);
               } catch (e) {
                 const msg = (e as Error).message;
                 setResetStatus(`Reset failed: ${msg}`);
-                toast.error(`Reset failed — ${msg}`);
+                toast.error(`Reset failed - ${msg}`);
               } finally {
                 setResetting(false);
               }

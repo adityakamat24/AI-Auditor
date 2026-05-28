@@ -7,7 +7,7 @@ Create Date: 2026-05-28
 0001 enabled RLS on every table in ``RLS_TABLES`` uniformly. 0002 then only created policies for
 tables that carry a ``tenant_id`` column (the ``_TENANT_TABLES`` and ``_NULLABLE_TENANT_TABLES``
 lists). The tables in ``_FK_TABLES`` (``hitl_decisions``, ``gate_decisions``, …) have **RLS enabled
-but no policy** — which Postgres treats as default-deny for non-owner roles. So under
+but no policy** - which Postgres treats as default-deny for non-owner roles. So under
 ``tenant_scope()`` (which switches to the non-superuser ``auditor_api``), every read and write
 against those tables fails with ``permission denied`` / ``new row violates row-level security
 policy``.
@@ -50,10 +50,10 @@ _API_WRITABLE_FK_TABLES: tuple[str, ...] = (
 
 def upgrade() -> None:
     for table in _API_WRITABLE_FK_TABLES:
-        # Allow DML — 0002 only granted SELECT.
+        # Allow DML - 0002 only granted SELECT.
         op.execute(f'GRANT INSERT, UPDATE, DELETE ON "{table}" TO {_API_ROLE}')
         # 0001 enabled RLS uniformly. Since no policy is defined for these tables, default-deny
-        # blocks the API. Disable RLS — the FK to the parent row + the route's tenant check provide
+        # blocks the API. Disable RLS - the FK to the parent row + the route's tenant check provide
         # logical isolation.
         op.execute(f'ALTER TABLE "{table}" DISABLE ROW LEVEL SECURITY')
 

@@ -1,4 +1,4 @@
-"""LiteLLMJudge output parsing — must survive fenced / prose-wrapped JSON (live models do this)."""
+"""LiteLLMJudge output parsing - must survive fenced / prose-wrapped JSON (live models do this)."""
 
 from __future__ import annotations
 

@@ -3,10 +3,10 @@
 The detection engine is the ten ASI detectors + the divergence/integrity detectors; operators don't think
 in ASI codes, they ask four questions:
 
-1. **Instruction Following** — is the agent doing what the user asked, or deviating?
-2. **Unauthorized Access** — is it touching files/resources/tools it shouldn't?
-3. **Data Exfiltration** — is it sending or writing data out?
-4. **Sensitive-Data Hygiene** — is it putting secrets/PII into memory or logs?
+1. **Instruction Following** - is the agent doing what the user asked, or deviating?
+2. **Unauthorized Access** - is it touching files/resources/tools it shouldn't?
+3. **Data Exfiltration** - is it sending or writing data out?
+4. **Sensitive-Data Hygiene** - is it putting secrets/PII into memory or logs?
 
 This module maps each detector to its **primary** check so a Flag can be presented under these four lenses.
 A few detectors span two concerns (e.g. ASI01 goal-hijack is primarily instruction-following but its
@@ -57,7 +57,7 @@ DETECTOR_CHECK: dict[str, Check] = {
     "asi06_memory_poisoning": Check.SENSITIVE_DATA_HYGIENE,
 }
 
-# Category-keyed fallback (used when a verdict's detector name isn't in DETECTOR_CHECK — e.g. divergence
+# Category-keyed fallback (used when a verdict's detector name isn't in DETECTOR_CHECK - e.g. divergence
 # findings tagged by ASI category).
 _CATEGORY_CHECK: dict[str, Check] = {
     "INSTRUCTION_FOLLOWING": Check.INSTRUCTION_FOLLOWING,

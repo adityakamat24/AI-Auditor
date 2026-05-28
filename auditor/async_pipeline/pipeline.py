@@ -1,7 +1,7 @@
-"""Post-run audit pipeline (PRD §9.6) — the off-hot-path path that ties sampling to detection.
+"""Post-run audit pipeline (PRD §9.6) - the off-hot-path path that ties sampling to detection.
 
 When a run completes, :func:`audit_run` (1) loads its trace, (2) computes cheap signals and asks the
-sampler whether to audit (and at what tier), (3) records the sampler decision, and — only if sampled —
+sampler whether to audit (and at what tier), (3) records the sampler decision, and - only if sampled -
 (4) runs the detector orchestrator (which persists verdicts + flag and opens an incident for High/Critical),
 then (5) routes any flag to the HITL queue and the live UI WebSocket. This is what makes the configured
 sampling % actually gate the expensive judge, instead of auditing every run.

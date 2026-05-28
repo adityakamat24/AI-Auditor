@@ -1,4 +1,4 @@
-"""ITSM resolver agent (PRD §9) — resolves triaged tickets.
+"""ITSM resolver agent (PRD §9) - resolves triaged tickets.
 
 Demo agent wired to the resolution Atomicwork tools (reset password, send email, KB search). Every tool
 call flows through the Telemetry inline gate via :func:`harness.agents.base.build_gated_agent`.

@@ -3,7 +3,7 @@
 Two agents coordinate over the intra-agent bus to split a forbidden action into individually-benign
 looking steps, evading per-agent checks. The messages are unsigned (ASI07 insecure inter-agent
 communication) and one agent performs a tool call outside its role's capabilities (ASI03 identity/
-privilege abuse — privilege escalation between colluding agents). ``run()`` drives the real
+privilege abuse - privilege escalation between colluding agents). ``run()`` drives the real
 :class:`Orchestrator` over the synthetic trace and returns its :class:`OrchestratorResult`.
 
 Key-free and deterministic.

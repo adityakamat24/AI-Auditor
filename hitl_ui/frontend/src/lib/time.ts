@@ -1,14 +1,14 @@
 /**
- * Tiny time helpers — used everywhere a timestamp is shown.
+ * Tiny time helpers - used everywhere a timestamp is shown.
  *
  * `formatRelative` produces a human-scannable string ("2m ago", "yesterday at 14:32", "Jan 14")
  * and `formatAbsolute` returns the full localised stamp (good for tooltips).
  *
- * Both are safe to call with null/undefined/empty input — they return a dash rather than throwing.
+ * Both are safe to call with null/undefined/empty input - they return a dash rather than throwing.
  */
 
 export function formatRelative(iso: string | null | undefined): string {
-  if (!iso) return "—";
+  if (!iso) return "-";
   try {
     const t = new Date(iso).getTime();
     if (Number.isNaN(t)) return iso;
@@ -29,7 +29,7 @@ export function formatRelative(iso: string | null | undefined): string {
 }
 
 export function formatAbsolute(iso: string | null | undefined): string {
-  if (!iso) return "—";
+  if (!iso) return "-";
   try {
     return new Date(iso).toLocaleString(undefined, {
       year: "numeric",

@@ -1,7 +1,7 @@
 """Unit tests for auditor.calibration.label (manual-labeling CLI).
 
 All database access is replaced by monkeypatching ``auditor.calibration.label.get_sessionmaker``
-with a fake async session factory — no live DB required.
+with a fake async session factory - no live DB required.
 
 Covers:
   - ``--add`` with valid args returns 0 and inserts a row.
@@ -170,7 +170,7 @@ class TestListGroundTruth:
 
     def test_category_filter_applied(self):
         """_list_ground_truth passes the category to the WHERE clause; the fake returns all rows
-        because the stmt_str inspection is not done here — we test that the helper builds the
+        because the stmt_str inspection is not done here - we test that the helper builds the
         query without error and returns whatever the session gives back."""
         session = _FakeSession(existing_rows=[self._make_row("ASI06")])
 

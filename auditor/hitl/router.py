@@ -1,13 +1,13 @@
-"""HITL router (PRD §9.10.1) — severity-tiered routing of aggregated flags.
+"""HITL router (PRD §9.10.1) - severity-tiered routing of aggregated flags.
 
 Dispatches a :class:`~auditor.verdicts.aggregator.Flag` to the correct
 review path based on its severity:
 
-* **CRITICAL** — pause the run (via the enforcer), enqueue in Redis (4 h TTL),
+* **CRITICAL** - pause the run (via the enforcer), enqueue in Redis (4 h TTL),
   and page via Slack.  Captures a checkpoint before pausing.
-* **HIGH** — enqueue in Redis (4 h TTL) + Slack notify.  No pause.
-* **MEDIUM** — append to the daily per-tenant digest list.  No pause or page.
-* **LOW** — log only.
+* **HIGH** - enqueue in Redis (4 h TTL) + Slack notify.  No pause.
+* **MEDIUM** - append to the daily per-tenant digest list.  No pause or page.
+* **LOW** - log only.
 
 All collaborators (enforcer, queue, notifier) are constructor-injectable so
 they can be replaced with fakes in unit tests.
@@ -130,7 +130,7 @@ class HitlRouter:
             return await self._route_high(flag)
         if severity == Severity.MEDIUM:
             return await self._route_medium(flag)
-        # LOW (and anything unexpected) — log only.
+        # LOW (and anything unexpected) - log only.
         return await self._route_low(flag)
 
     # ------------------------------------------------------------------
@@ -148,7 +148,7 @@ class HitlRouter:
         except Exception as exc:  # noqa: BLE001
             log.warning("hitl.router.checkpoint_failed", flag_id=str(flag.flag_id), error=str(exc))
 
-        # 2. Pause the run — tolerate missing PID gracefully.
+        # 2. Pause the run - tolerate missing PID gracefully.
         try:
             enforcer = self._get_enforcer()
             await enforcer.pause(flag.run_id)  # type: ignore[union-attr]

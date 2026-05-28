@@ -1,6 +1,6 @@
 """Private CA bootstrap CLI (PRD §11.1/§11.4): mint the mTLS root CA.
 
-Usage: ``python -m auditor.auth.init_ca``. Idempotent — does nothing if the CA already exists. Per-run
+Usage: ``python -m auditor.auth.init_ca``. Idempotent - does nothing if the CA already exists. Per-run
 leaf certs are minted at run start by the auditor (see :func:`auditor.auth.ca.mint_leaf_to_files`).
 """
 

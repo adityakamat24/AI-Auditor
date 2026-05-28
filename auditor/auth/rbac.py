@@ -1,4 +1,4 @@
-"""Role-based access control (PRD §11.2). STUB — implemented in Phase 7.
+"""Role-based access control (PRD §11.2). STUB - implemented in Phase 7.
 
 Defines the roles (admin / reviewer / read-only) and the permission checks the API routes depend on,
 resolving a verified principal's roles to allowed actions. Enforced as FastAPI dependencies in Phase 7.

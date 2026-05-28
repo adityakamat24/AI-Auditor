@@ -1,7 +1,7 @@
 """Central configuration for the auditor and harness.
 
 Single source of truth (pydantic-settings). Every module reads :class:`Settings`; nothing reads
-``os.environ`` directly — secret reads go through :mod:`auditor.auth.secrets`. Field names map 1:1
+``os.environ`` directly - secret reads go through :mod:`auditor.auth.secrets`. Field names map 1:1
 to ``.env`` (case-insensitive). This object intentionally carries the *full* field surface for all
 phases so later phases only add values, never restructure.
 """
@@ -61,7 +61,7 @@ class Settings(BaseSettings):
     agent_model: str = "claude-sonnet-4-6"
     crosscheck_model: str = "claude-sonnet-4-6"
 
-    # --- Embeddings (LOCAL by default; Anthropic has no embeddings API — see plan deviation #2) ---
+    # --- Embeddings (LOCAL by default; Anthropic has no embeddings API - see plan deviation #2) ---
     # "stub" is a deterministic offline embedder for tests/CI (no model download).
     embedding_backend: Literal["fastembed", "voyage", "stub"] = "fastembed"
     embedding_model: str = "BAAI/bge-small-en-v1.5"
@@ -77,7 +77,7 @@ class Settings(BaseSettings):
     ipc_server_enabled: bool = True  # auditor starts the IPC listener for the harness
     gate_timeout_ms: int = 100  # SDK inline-gate request timeout; on timeout the SDK fails closed (DENY)
 
-    # --- Audit sampling (PRD §5.4, §9.6.1) — what fraction of runs get the deep async audit ---
+    # --- Audit sampling (PRD §5.4, §9.6.1) - what fraction of runs get the deep async audit ---
     # L2 stratified base rate: 0.05 = 5%, 0.01 = 1%. Set SAMPLER_DEFAULT_RATE in .env to change it.
     # Per-tool-category overrides via SAMPLER_CATEGORY_RATES as JSON, e.g.
     #   SAMPLER_CATEGORY_RATES='{"exec_shell": 0.5, "kb_search": 0.01}'
@@ -102,19 +102,19 @@ class Settings(BaseSettings):
     jwt_algorithm: str = "HS256"
     jwt_ttl_seconds: int = 3600
 
-    # --- OIDC (Phase 7 integration point — Auth0 / Okta / Google compatible) ---
+    # --- OIDC (Phase 7 integration point - Auth0 / Okta / Google compatible) ---
     # Leave empty in dev; set both to wire a real IdP.
-    # OIDC_ISSUER  — e.g. "https://example.us.auth0.com/" or "https://accounts.google.com"
-    # OIDC_JWKS_URI — e.g. "https://example.us.auth0.com/.well-known/jwks.json"
+    # OIDC_ISSUER  - e.g. "https://example.us.auth0.com/" or "https://accounts.google.com"
+    # OIDC_JWKS_URI - e.g. "https://example.us.auth0.com/.well-known/jwks.json"
     #                 (if empty, auto-derived from issuer + "/.well-known/jwks.json")
-    # OIDC_AUDIENCE — expected ``aud`` claim value (required for Auth0, optional for others)
+    # OIDC_AUDIENCE - expected ``aud`` claim value (required for Auth0, optional for others)
     oidc_issuer: str = ""  # empty = OIDC disabled; dev uses local HMAC tokens
     oidc_jwks_uri: str = ""  # empty = auto-derive from issuer when OIDC is enabled
     oidc_audience: str = ""  # empty = audience check skipped
 
     # --- Dev-login (Phase 7 local-fallback) ---
     # Enables POST /auth/login with {email, password} when no IdP is configured.
-    # Role is ALWAYS read from the DB row — the caller cannot choose their role.
+    # Role is ALWAYS read from the DB row - the caller cannot choose their role.
     # Set to False in prod when a real OIDC IdP is in use.
     auth_dev_login_enabled: bool = True
 

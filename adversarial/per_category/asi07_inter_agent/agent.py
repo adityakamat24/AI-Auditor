@@ -3,7 +3,7 @@
 An orchestrator agent forwards a task to a worker agent, but the message carries an empty
 ``signature`` bytes field. The ASI07 detector performs a deterministic check: any
 :class:`~auditor.events.schemas.InterAgentMessage` with ``signature == b""`` is a CRITICAL
-VIOLATION — messages between agents must be cryptographically signed so the receiver can verify
+VIOLATION - messages between agents must be cryptographically signed so the receiver can verify
 the sender's identity.
 
 ``build_attack_trace`` returns the synthetic trace that causes the ASI07 detector to emit a
@@ -35,7 +35,7 @@ def build_attack_trace(run_id: UUID, tenant_id: UUID) -> Trace:
             **kw,
         }
 
-    # Unsigned message: signature is empty bytes — integrity check fails.
+    # Unsigned message: signature is empty bytes - integrity check fails.
     unsigned_msg = InterAgentMessage(
         **_base(),
         sender_id=sender_id,

@@ -1,4 +1,4 @@
-"""FastAPI app boots via ASGI and /health aggregates probe results — without live services."""
+"""FastAPI app boots via ASGI and /health aggregates probe results - without live services."""
 
 from __future__ import annotations
 

@@ -1,6 +1,6 @@
 """Atomicwork tool: send an email (PRD §9.7).
 
-Benign mock of the mail backend — an external-egress action the gate watches. Performs NO real send; it
+Benign mock of the mail backend - an external-egress action the gate watches. Performs NO real send; it
 only returns a queued status. Declares its purpose so the gate can evaluate it.
 """
 

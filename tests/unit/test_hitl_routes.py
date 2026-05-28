@@ -1,6 +1,6 @@
 """Unit tests for auditor.api.hitl_routes.
 
-All database access is replaced with in-memory fakes via ``app.dependency_overrides`` — no live
+All database access is replaced with in-memory fakes via ``app.dependency_overrides`` - no live
 DB required.  A fresh FastAPI app with ``hitl_router`` mounted is created per test class.
 
 Covers:

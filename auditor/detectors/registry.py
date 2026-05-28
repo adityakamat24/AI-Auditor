@@ -1,6 +1,6 @@
 """Detector registry + lifecycle state (PRD §9.13).
 
-Newly registered detectors default to ``PROPOSED`` — this structurally enforces the rule that nobody
+Newly registered detectors default to ``PROPOSED`` - this structurally enforces the rule that nobody
 (including Claude Code) can ship a detector straight to ``ENFORCING``. The full state machine and
 promotion criteria are implemented in Phase 8; this registry establishes the seam.
 """

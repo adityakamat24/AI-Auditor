@@ -1,10 +1,10 @@
-"""Channel correlator — joins voluntary + involuntary events per run (PRD §9.4.4, §5.6).
+"""Channel correlator - joins voluntary + involuntary events per run (PRD §9.4.4, §5.6).
 
 Matches what an agent *claimed* (voluntary tool-call / llm events) against what the host *observed*
 (involuntary syscall events) within a time window. The "expected correlate" allowlist maps voluntary
 events to the syscall signatures they legitimately produce (e.g. ``file_read(path=X)`` -> ``openat(X)``;
 ``llm.call`` -> ``connect(api.anthropic.com)``). Involuntary events with no matching declaration (and
-not absorbed by the learned runtime baseline) are returned as *unmatched* — divergence candidates.
+not absorbed by the learned runtime baseline) are returned as *unmatched* - divergence candidates.
 """
 
 from __future__ import annotations

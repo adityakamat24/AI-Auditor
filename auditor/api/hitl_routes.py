@@ -1,16 +1,16 @@
-"""HITL API routes (PRD §10.2) — Phase 5 implementation.
+"""HITL API routes (PRD §10.2) - Phase 5 implementation.
 
 Endpoints backing the reviewer UI: flag list, flag detail with trace, HITL decision submission,
 run detail, run event stream, replay bundle, and a WebSocket live-update channel.
 
-# Architecture note — DB-free seams for testing
+# Architecture note - DB-free seams for testing
 # -----------------------------------------------
 # All database access goes through module-level *helper functions* (``_get_flags``, ``_get_flag``,
 # etc.) that accept a ``session`` argument.  Tests override these via ``app.dependency_overrides``
 # without touching any real database.  Production code wires in the real SQLAlchemy session through
 # the ``Annotated[AsyncSession, Depends(get_db_session)]`` dependency.
 
-Router name: ``hitl_router`` — registered by ``auditor/main.py`` (integration step; do not
+Router name: ``hitl_router`` - registered by ``auditor/main.py`` (integration step; do not
 register here).
 """
 
@@ -72,7 +72,7 @@ class FlagBroadcaster:
                 pass  # slow consumer; drop update rather than block
 
 
-# Module-level broadcaster — import this in the pipeline to publish flags.
+# Module-level broadcaster - import this in the pipeline to publish flags.
 flag_broadcaster = FlagBroadcaster()
 
 # ------------------------------------------------------------------------------- DB session dependency
@@ -146,7 +146,7 @@ async def _insert_hitl_decision(
     decision: str,
     rationale: str | None,
 ) -> HitlDecision:
-    """Insert a HitlDecision row and flush (no commit — caller handles transaction)."""
+    """Insert a HitlDecision row and flush (no commit - caller handles transaction)."""
     row = HitlDecision(
         hitl_id=str(uuid.uuid4()),
         flag_id=flag_id,
@@ -283,7 +283,7 @@ async def submit_decision(
     row and writes an entry to the hash-chained audit log.
     """
     # tenant_scope auto-begins a transaction on its first SET LOCAL; the read + write happen in the
-    # SAME transaction (don't call session.begin() again — that raises InvalidRequestError on the
+    # SAME transaction (don't call session.begin() again - that raises InvalidRequestError on the
     # already-open transaction). Commit at the end of the scope, then do the best-effort audit log
     # write + enforcer dispatch outside the DB transaction.
     async with tenant_scope(session, claims["tenant_id"]):
@@ -303,7 +303,7 @@ async def submit_decision(
             rationale=body.rationale,
         )
 
-        # Close the flag — recording a decision is the human's resolution of the alert.
+        # Close the flag - recording a decision is the human's resolution of the alert.
         # `continue` → allowed; `abort`/`quarantine` → reflected verbatim. The flag falls out of the
         # default `status=open` review-queue filter as soon as we commit, so the operator sees an
         # immediate "you handled this" signal.
@@ -312,7 +312,7 @@ async def submit_decision(
         flag.resolution = _RESOLUTION_FOR.get(body.decision, body.decision)
         flag.resolved_at = datetime.now(tz=UTC)
 
-        # Snapshot before commit — async sessions expire attributes by default on commit, and the
+        # Snapshot before commit - async sessions expire attributes by default on commit, and the
         # outer return path needs the dict-encoded row.
         result = _decision_to_dict(decision_row)
         await session.commit()
@@ -332,7 +332,7 @@ async def submit_decision(
                 "flag_id": flag_id,
             },
         )
-    except Exception:  # noqa: BLE001,S110 — audit log failure is non-fatal; ops monitors chain breaks
+    except Exception:  # noqa: BLE001,S110 - audit log failure is non-fatal; ops monitors chain breaks
         pass  # noqa: S110
 
     # Apply the decision to the run's process via the enforcer (continue→resume, abort/quarantine→abort).

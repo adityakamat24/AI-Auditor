@@ -78,7 +78,7 @@ class GateDispatcher:
             return None
         if kind == "req":
             return await self._gate(frame.req.event)
-        return None  # heartbeat / seccomp_update — no response
+        return None  # heartbeat / seccomp_update - no response
 
     async def _store(self, ev: Event) -> None:
         event_dict = event_to_dict(ev)

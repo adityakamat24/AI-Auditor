@@ -1,8 +1,8 @@
 /**
- * Incident detail — schema-honest, clean light visual.
+ * Incident detail - schema-honest, clean light visual.
  *
  * Header card with severity + state + lifecycle timeline. State transitions follow STATE_FLOW.
- * Comments + action items + similar incidents load lazily via Promise.allSettled — a freshly
+ * Comments + action items + similar incidents load lazily via Promise.allSettled - a freshly
  * seeded incident won't 404 the page if those endpoints are empty.
  */
 
@@ -88,7 +88,7 @@ function Timeline({ incident }: { incident: Incident }) {
             {s.label}
           </div>
           <div className={`text-[11px] mt-0.5 truncate ${s.ts ? "text-gray-600 dark:text-gray-400" : "text-gray-400 dark:text-gray-500"}`}>
-            {s.ts ? new Date(s.ts).toLocaleString() : "—"}
+            {s.ts ? new Date(s.ts).toLocaleString() : "-"}
           </div>
         </div>
       ))}
@@ -156,7 +156,7 @@ export default function IncidentDetail(): React.ReactElement {
     } catch (e) {
       const msg = (e as Error).message;
       setError(msg);
-      toast.error(`Transition failed — ${msg}`);
+      toast.error(`Transition failed - ${msg}`);
     } finally {
       setSubmitting(false);
     }
@@ -172,7 +172,7 @@ export default function IncidentDetail(): React.ReactElement {
     } catch (e) {
       const msg = (e as Error).message;
       setError(msg);
-      toast.error(`Could not post comment — ${msg}`);
+      toast.error(`Could not post comment - ${msg}`);
     }
   };
 
@@ -186,7 +186,7 @@ export default function IncidentDetail(): React.ReactElement {
     } catch (e) {
       const msg = (e as Error).message;
       setError(msg);
-      toast.error(`Could not add action item — ${msg}`);
+      toast.error(`Could not add action item - ${msg}`);
     }
   };
 
@@ -275,7 +275,7 @@ export default function IncidentDetail(): React.ReactElement {
             value={transitionRationale}
             onChange={(e) => setTransitionRationale(e.target.value)}
             rows={2}
-            placeholder="Optional — rationale for the transition"
+            placeholder="Optional - rationale for the transition"
             className={`${INPUT} w-full resize-none mb-3`}
           />
           {nextStates.includes("POST_MORTEM_COMPLETE") && (

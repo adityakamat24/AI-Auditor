@@ -1,11 +1,11 @@
-"""Admin API routes (PRD §10.1) — calibration endpoints.
+"""Admin API routes (PRD §10.1) - calibration endpoints.
 
 Only the two calibration endpoints are implemented here; tenant/policy/user/kill_switch
 endpoints are Phase 7 and remain out of scope.
 
-Router name: ``admin_router`` — registered by ``auditor/main.py`` (do NOT register here).
+Router name: ``admin_router`` - registered by ``auditor/main.py`` (do NOT register here).
 
-# Architecture note — DB-free seams for testing
+# Architecture note - DB-free seams for testing
 # -----------------------------------------------
 # All database access goes through ``get_db_session``, an injectable dependency identical in
 # pattern to ``hitl_routes.py``.  Tests override it via ``app.dependency_overrides`` without
@@ -133,7 +133,7 @@ async def run_calibration(
     try:
         await _insert_calibration_run(session, report)
         await session.commit()
-    except Exception:  # noqa: BLE001 — best-effort persistence; ops monitors DB health separately
+    except Exception:  # noqa: BLE001 - best-effort persistence; ops monitors DB health separately
         logger.warning("calibration/run: failed to persist report (best-effort; non-fatal)")
 
     report_dict = asdict(report)
@@ -167,7 +167,7 @@ async def grant_role(
     claims: Annotated[dict, Depends(require_role("admin"))] = None,  # type: ignore[assignment]
     session: AsyncSession = Depends(get_db_session),
 ) -> dict:
-    """Grant a role to a user — admin only (PRD §11.2 / Phase-7 acceptance).
+    """Grant a role to a user - admin only (PRD §11.2 / Phase-7 acceptance).
 
     Acceptance criterion: "a reviewer cannot escalate to admin without an admin granting the role."
 
@@ -213,7 +213,7 @@ async def grant_role(
 
 
 class SamplerSettingsBody(BaseModel):
-    """Body for PUT /admin/sampler — all fields optional, omitted = keep current."""
+    """Body for PUT /admin/sampler - all fields optional, omitted = keep current."""
 
     mode: str | None = None  # percentage | every_nth | interval | always | never
     rate: float | None = None
@@ -237,7 +237,7 @@ async def update_sampler(
     body: SamplerSettingsBody,
     claims: Annotated[dict, Depends(require_role("admin"))] = None,  # type: ignore[assignment]
 ) -> dict:
-    """Update the sampler configuration. Admin-only — changes apply to the very next run."""
+    """Update the sampler configuration. Admin-only - changes apply to the very next run."""
     from auditor.async_pipeline.runtime_policy import SamplerSettings, get_settings_snapshot, set_settings
 
     current = get_settings_snapshot()
@@ -267,7 +267,7 @@ async def reset_demo_data(
 ) -> dict:
     """Truncate all per-run demo data so the next session shows only its own runs.
 
-    Keeps tenants, users, and policies. Audit-log chain restarts from genesis — the verifier will treat
+    Keeps tenants, users, and policies. Audit-log chain restarts from genesis - the verifier will treat
     a fresh tenant chain as ``intact, 0 entries`` until new entries are appended.
     """
     from sqlalchemy import text as sql_text

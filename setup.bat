@@ -1,5 +1,5 @@
 @echo off
-REM First-time setup for a fresh clone (Windows). One-shot — runs both bootstrap and init.
+REM First-time setup for a fresh clone (Windows). One-shot - runs both bootstrap and init.
 REM Idempotent: re-running on an existing checkout reinstalls deps and re-applies migrations.
 REM
 REM After this finishes successfully, use start.bat to launch the demo every day.

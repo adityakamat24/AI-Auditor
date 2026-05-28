@@ -10,7 +10,7 @@ A two-session attack that single-run analysis cannot catch:
 
 When ASI06 fires on run B, the influence-chain walk traces the poison back to its origin, producing the
 exact triple the acceptance criterion asks for: *the run that poisoned*, *the run that read*, and *the
-entry that was poisoned* — and quarantines the entry.
+entry that was poisoned* - and quarantines the entry.
 
 ``run()`` executes the scenario over an in-memory provenance store (no DB, no key needed) and returns a
 :class:`MemoryPersistenceResult` for assertions. The same flow works against a DB-backed provenance
@@ -43,8 +43,8 @@ class MemoryPersistenceResult:
     """Outcome of the cross-run scenario, with the ids needed to assert the influence chain."""
 
     chain: InfluenceChain
-    poisoned_run_id: UUID  # run A — wrote the poison
-    exploit_run_id: UUID  # run B — read + acted on it
+    poisoned_run_id: UUID  # run A - wrote the poison
+    exploit_run_id: UUID  # run B - read + acted on it
     poisoned_entry_id: UUID  # the entry that was poisoned
     store: InMemoryProvenanceStore
 

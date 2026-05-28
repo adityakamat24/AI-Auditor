@@ -1,6 +1,6 @@
 """Calibration ground-truth corpus (PRD §9.12.1).
 
-A labeled set of traces — VIOLATION and OK per ASI category — used by the nightly job to score detector
+A labeled set of traces - VIOLATION and OK per ASI category - used by the nightly job to score detector
 precision/recall. In production these are sourced from adversarial test runs (auto-labeled VIOLATION) and
 manual labels (clean→OK), with trace content in MinIO; here we materialize the canonical synthetic set
 in-process (deterministic, key-free) so calibration runs without services. Each entry's trace carries the

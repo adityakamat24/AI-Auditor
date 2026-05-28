@@ -42,7 +42,7 @@ function App(): React.ReactElement {
                     path="*"
                     element={
                       <div className="p-8 text-gray-500 dark:text-gray-400 text-center">
-                        404 — page not found.{" "}
+                        404 - page not found.{" "}
                         <a href="/run" className="text-indigo-600 dark:text-indigo-400 underline">
                           Back to console
                         </a>

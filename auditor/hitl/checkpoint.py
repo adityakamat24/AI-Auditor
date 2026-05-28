@@ -1,4 +1,4 @@
-"""HITL checkpoint (PRD §9.10.2) — snapshot run state and upload to MinIO.
+"""HITL checkpoint (PRD §9.10.2) - snapshot run state and upload to MinIO.
 
 :class:`CheckpointCapture` builds an in-memory ``tar.gz`` archive containing
 the agent's recent LLM context (last ≤50 turns), the in-flight tool state,
@@ -88,7 +88,7 @@ class CheckpointCapture:
             tar.addfile(info, io.BytesIO(data))
 
         with tarfile.open(fileobj=buf, mode="w:gz") as tar:
-            # 1. LLM context — last ≤50 turns.
+            # 1. LLM context - last ≤50 turns.
             ctx_turns = (llm_context or [])[-50:]
             _add(tar, "llm_context.json", json.dumps(ctx_turns, default=str, indent=2))
 
@@ -148,7 +148,7 @@ class CheckpointCapture:
         return info
 
     def _upload(self, bucket: str, object_name: str, data: bytes) -> None:
-        """Synchronous upload — run via asyncio.to_thread."""
+        """Synchronous upload - run via asyncio.to_thread."""
         minio = self._get_minio()
         # Ensure bucket exists.
         try:
@@ -182,7 +182,7 @@ class CheckpointCapture:
         object_name = f"{_OBJECT_PREFIX}/{tenant_id}/checkpoints/{run_id}_{ts}.tar.gz"
         bucket = self._get_bucket()
 
-        # Collect process state (best-effort, sync — cheap).
+        # Collect process state (best-effort, sync - cheap).
         process_state = self._collect_process_state(run_id)
 
         # Build archive bytes in a thread to avoid blocking the event loop.

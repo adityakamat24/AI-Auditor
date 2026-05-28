@@ -44,7 +44,7 @@ LEGAL_TRANSITIONS: dict[str, frozenset[str]] = {
     "INVESTIGATING": frozenset({"CONTAINED"}),
     "CONTAINED": frozenset({"RESOLVED"}),
     "RESOLVED": frozenset({"POST_MORTEM_COMPLETE"}),
-    # Terminal states — no outbound transitions.
+    # Terminal states - no outbound transitions.
     "POST_MORTEM_COMPLETE": frozenset(),
     "DISMISSED": frozenset(),
 }
@@ -139,7 +139,7 @@ class IncidentStateMachine:
         if target not in allowed:
             raise IncidentTransitionError(
                 f"Cannot transition from '{current}' to '{target}'. "
-                f"Legal targets from '{current}': {sorted(allowed) or '(none — terminal state)'}"
+                f"Legal targets from '{current}': {sorted(allowed) or '(none - terminal state)'}"
             )
 
     @staticmethod

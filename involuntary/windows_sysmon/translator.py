@@ -14,18 +14,18 @@ Sysmon EventID -> schema mapping:
  3           NetworkConnect           ``SyscallConnect`` (family from SourceIsIpv6, addr/port=Dest*)
  11          FileCreate               ``SyscallOpenat`` (path=TargetFilename, flags=0)
  22          DnsQuery                 ``DnsQueryEvent`` (query_name=QueryName, results=QueryResults)
- 23          FileDelete               ``SyscallOpenat`` (path=TargetFilename, flags=0) — see note
- *           anything else            ``None`` (unmapped — caller drops it)
+ 23          FileDelete               ``SyscallOpenat`` (path=TargetFilename, flags=0) - see note
+ *           anything else            ``None`` (unmapped - caller drops it)
 ==========  =======================  =============================================================
 
 Notes / mapping decisions:
 
 * **EventID 23 (FileDelete)** is mapped to ``SyscallOpenat`` (a file *touch*). The normalized schema
   has no delete event; the channel-divergence detector cares that the harness touched a sensitive
-  path, not the access mode. ``flags`` stays ``0`` (we do not synthesize ``O_*`` constants — Sysmon
+  path, not the access mode. ``flags`` stays ``0`` (we do not synthesize ``O_*`` constants - Sysmon
   does not report Windows ``CreateFile`` desired-access in a portable way).
 * **EventID 10 (ProcessAccess)** returns ``None`` for now. It is relevant to ASI03 (identity abuse,
-  one process opening another) but there is no faithful ``Syscall*`` target — it is neither a connect
+  one process opening another) but there is no faithful ``Syscall*`` target - it is neither a connect
   nor an openat. It is handled in a later phase (P4); mapping it here would be a lie to the detector.
 * **EventID 13 (RegistryValueSet)** returns ``None`` (Windows-specific; no portable schema).
 * ``pid`` comes from the ``ProcessId`` ``EventData`` field, which Sysmon renders in **decimal**.
@@ -129,7 +129,7 @@ def _header(data: dict, *, run_id: UUID, tenant_id: UUID) -> dict:
 def _argv_from_command_line(command_line: str | None) -> list[str]:
     """Best-effort argv from a Sysmon ``CommandLine`` string.
 
-    Whitespace-split (no shell-quoting awareness — Sysmon does not expose a tokenized argv on
+    Whitespace-split (no shell-quoting awareness - Sysmon does not expose a tokenized argv on
     Windows). Falls back to a single-element list so quoted commands are not silently dropped.
     """
     if not command_line:
@@ -174,12 +174,12 @@ def translate(xml_str: str, *, run_id: UUID, tenant_id: UUID) -> BaseEvent | Non
 
     if event_id == 22:  # DnsQuery
         raw_results = data.get("QueryResults") or ""
-        # Sysmon QueryResults look like "type:  5 a1.example.com;::ffff:1.2.3.4;" — keep non-empty
+        # Sysmon QueryResults look like "type:  5 a1.example.com;::ffff:1.2.3.4;" - keep non-empty
         # tokens and strip the leading "type: N " annotation Sysmon sometimes prepends.
         results = [r.strip() for r in raw_results.split(";") if r.strip()]
         return DnsQueryEvent(query_name=data.get("QueryName") or "", results=results, **header)
 
-    if event_id == 23:  # FileDelete — treat as a file touch (see module docstring)
+    if event_id == 23:  # FileDelete - treat as a file touch (see module docstring)
         return SyscallOpenat(path=data.get("TargetFilename") or "", flags=0, **header)
 
     # EventID 10 (ProcessAccess), 13 (RegistryValueSet), and anything else: unmapped for now.

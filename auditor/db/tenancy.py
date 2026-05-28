@@ -7,14 +7,14 @@ added in Phase 7 filter rows to the active tenant.
 Why the role switch is required
 --------------------------------
 The application connects as the ``auditor`` role which is a PostgreSQL superuser.  Superusers
-bypass row-level security unconditionally — even ``FORCE ROW LEVEL SECURITY`` does not apply to
+bypass row-level security unconditionally - even ``FORCE ROW LEVEL SECURITY`` does not apply to
 them (the Postgres docs explicitly state: "Superusers ... always bypass the row security system").
 By executing ``SET LOCAL ROLE auditor_api`` within the transaction, the effective role drops to
 the non-superuser ``auditor_api`` for the remainder of that transaction, making RLS enforcement
 apply.  The ``LOCAL`` qualifier means the role reverts to ``auditor`` automatically when the
 transaction ends.
 
-Using ``set_config`` (rather than bare ``SET LOCAL``) lets us bind the tenant id as a parameter —
+Using ``set_config`` (rather than bare ``SET LOCAL``) lets us bind the tenant id as a parameter -
 no string interpolation, no injection.  The role name is a fixed constant, not user-supplied, so
 it is safe to interpolate in the ``SET LOCAL ROLE`` statement.
 """

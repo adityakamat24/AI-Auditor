@@ -1,4 +1,4 @@
-"""Human-in-the-loop review (PRD §9.10) — route, queue, checkpoint, notify. STUB — Phase 5.
+"""Human-in-the-loop review (PRD §9.10) - route, queue, checkpoint, notify. STUB - Phase 5.
 
 When a flag's severity crosses the HITL threshold, the run is checkpointed (paused) and routed to a review
 queue; a human's decision resumes or aborts it. Submodules are stubs.

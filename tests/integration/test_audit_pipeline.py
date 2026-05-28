@@ -1,8 +1,8 @@
 """Post-run audit pipeline against the live DB + live judge (PRD §9.6).
 
 Proves the real wiring: stored events → load_trace → cheap signals → sampler → (if sampled) the detector
-orchestrator → persisted flag + auto-opened incident. Requires the full stack (Postgres migrated, and —
-since integration tests use the LIVE judge — the LiteLLM proxy + ANTHROPIC_API_KEY). Marked ``integration``.
+orchestrator → persisted flag + auto-opened incident. Requires the full stack (Postgres migrated, and -
+since integration tests use the LIVE judge - the LiteLLM proxy + ANTHROPIC_API_KEY). Marked ``integration``.
 """
 
 from __future__ import annotations

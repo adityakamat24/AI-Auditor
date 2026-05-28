@@ -1,4 +1,4 @@
-"""Enforcer ABC (PRD §9.5) — the pause/resume/abort contract every backend implements.
+"""Enforcer ABC (PRD §9.5) - the pause/resume/abort contract every backend implements.
 
 The inline gate (cooperative) and the OS-level backstops (cgroup/seccomp on Linux, Job Object on Windows)
 all satisfy this interface so the decision layer is agnostic to *how* a run is halted.

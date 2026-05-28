@@ -1,5 +1,5 @@
 /**
- * Skeleton placeholders — used while a network fetch is in flight. Animated pulse on a soft gray
+ * Skeleton placeholders - used while a network fetch is in flight. Animated pulse on a soft gray
  * surface; honors light + dark themes.
  */
 import React from "react";

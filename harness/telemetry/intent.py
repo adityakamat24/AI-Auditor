@@ -1,4 +1,4 @@
-"""Intent declaration (PRD §9.1) — agents declare a plan before acting.
+"""Intent declaration (PRD §9.1) - agents declare a plan before acting.
 
 A thin wrapper over :meth:`harness.telemetry.sdk.Telemetry.declare_intent` so callers emit a single
 ``intent.declare`` event (stated intent + plan steps). The auditor later compares declared intent against

@@ -1,6 +1,6 @@
 #requires -Version 5.1
 # Single-click bring-up: docker services + LiteLLM + auditor (mTLS) + UI dev server.
-# Opens two new console windows (Auditor and UI). Close them — or run stop.bat — to stop.
+# Opens two new console windows (Auditor and UI). Close them - or run stop.bat - to stop.
 $ErrorActionPreference = "Continue"
 $root = (Resolve-Path "$PSScriptRoot\..\..").Path
 Set-Location $root

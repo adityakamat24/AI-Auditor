@@ -4,16 +4,16 @@
 # Do NOT use this module for anything that requires production-grade auth guarantees.
 
 The token format is JWT-shaped (base64url-encoded header.payload.signature) but uses only stdlib
-``hmac``, ``hashlib``, ``json``, and ``base64`` — no new dependencies.  Signing uses HMAC-SHA256
+``hmac``, ``hashlib``, ``json``, and ``base64`` - no new dependencies.  Signing uses HMAC-SHA256
 over the concatenated header.payload signing input, keyed with ``Settings.jwt_secret``.
 
 Token lifetime defaults to 8 hours (``TTL_DEFAULT_S``).  Tokens carry ``exp`` so expiry is
 enforced on verify.
 
 FastAPI dependencies:
-  - ``get_current_user`` — reads ``Authorization: Bearer <token>`` or ``session`` cookie; returns
+  - ``get_current_user`` - reads ``Authorization: Bearer <token>`` or ``session`` cookie; returns
     the decoded claims dict; raises HTTP 401 on missing / invalid token.
-  - ``require_role(*roles)`` — factory that returns a FastAPI dependency enforcing RBAC; 403 on
+  - ``require_role(*roles)`` - factory that returns a FastAPI dependency enforcing RBAC; 403 on
     wrong role, 401 on missing/invalid token.
 """
 
@@ -104,7 +104,7 @@ def issue_token(
 def verify_token(token: str) -> dict[str, Any]:
     """Verify *token* signature and expiry; return claims dict on success.
 
-    Raises :class:`AuthError` (a ``ValueError`` subclass) on any failure — invalid format,
+    Raises :class:`AuthError` (a ``ValueError`` subclass) on any failure - invalid format,
     bad signature, or expired token.
     """
     try:
@@ -211,14 +211,14 @@ def verify_oidc_token(token: str) -> dict:  # noqa: ARG001
       6. Return the decoded claims dict (``sub``, ``email``, ``role`` / custom claims).
 
     Config fields (all in ``auditor.config.Settings``):
-      - ``oidc_issuer``   — e.g. "https://example.us.auth0.com/"
-      - ``oidc_jwks_uri`` — e.g. "https://example.us.auth0.com/.well-known/jwks.json"
+      - ``oidc_issuer``   - e.g. "https://example.us.auth0.com/"
+      - ``oidc_jwks_uri`` - e.g. "https://example.us.auth0.com/.well-known/jwks.json"
                             (if empty, auto-derived as ``issuer + "/.well-known/jwks.json"``)
-      - ``oidc_audience`` — expected ``aud`` claim (empty = skip audience check)
+      - ``oidc_audience`` - expected ``aud`` claim (empty = skip audience check)
 
     Raises:
-      NotImplementedError — when ``OIDC_ISSUER`` is not configured (dev / local-HMAC mode).
-      AuthError           — when the token fails validation (bad sig, expired, wrong issuer).
+      NotImplementedError - when ``OIDC_ISSUER`` is not configured (dev / local-HMAC mode).
+      AuthError           - when the token fails validation (bad sig, expired, wrong issuer).
 
     Note: This function intentionally does NOT make network calls when OIDC is unconfigured.
     Tests that import this module will never trigger an HTTP request.
@@ -241,7 +241,7 @@ def verify_oidc_token(token: str) -> dict:  # noqa: ARG001
     #   if settings.oidc_audience:
     #       claims.validate_aud(settings.oidc_audience)
     #   return dict(claims)
-    raise NotImplementedError(  # pragma: no cover — reached only if issuer set but impl missing
+    raise NotImplementedError(  # pragma: no cover - reached only if issuer set but impl missing
         "OIDC issuer is configured but the JWKS validation path is not yet implemented. "
         "Install authlib / PyJWT and replace this placeholder."
     )

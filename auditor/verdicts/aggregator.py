@@ -1,4 +1,4 @@
-"""Verdict aggregator (PRD §9.9) — combine a run's detector verdicts into a single Flag.
+"""Verdict aggregator (PRD §9.9) - combine a run's detector verdicts into a single Flag.
 
 Groups verdicts by ASI category, takes the max severity across all, computes a confidence as a weighted
 average (deterministic detectors weight 1.0; judge-driven weighted by their confidence), and emits one

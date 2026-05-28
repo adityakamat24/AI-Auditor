@@ -1,6 +1,6 @@
 """Shared pytest fixtures.
 
-Unit tests must NOT require live backing services (Postgres/Redis/MinIO/OPA) — all I/O is mocked or
+Unit tests must NOT require live backing services (Postgres/Redis/MinIO/OPA) - all I/O is mocked or
 stubbed. Integration tests (Phase 2+) opt in via the ``integration`` marker.
 """
 
@@ -22,8 +22,8 @@ def _offline_judge(request: pytest.FixtureRequest, monkeypatch: pytest.MonkeyPat
 
     Judge-driven detectors call :func:`auditor.judge.client.get_judge`, which selects the live
     ``LiteLLMJudge`` whenever ``ANTHROPIC_API_KEY`` is present (e.g. in a real ``.env``). Unit/red-team
-    tests must be hermetic — independent of local env and never making real (paid, non-deterministic) LLM
-    calls — so we point the judge factory's settings at a key-less Settings, which selects the offline
+    tests must be hermetic - independent of local env and never making real (paid, non-deterministic) LLM
+    calls - so we point the judge factory's settings at a key-less Settings, which selects the offline
     stub. Integration tests opt out via the ``integration`` marker and may exercise the live judge.
     """
     if request.node.get_closest_marker("integration"):

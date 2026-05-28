@@ -1,4 +1,4 @@
-"""Replay helpers (PRD §9.11.3) — standalone functions, no FastAPI router here.
+"""Replay helpers (PRD §9.11.3) - standalone functions, no FastAPI router here.
 
 The HITL routes (``auditor/api/hitl_routes.py``) call these functions; this module
 intentionally does NOT define a router so the routes agent owns the endpoint surface.

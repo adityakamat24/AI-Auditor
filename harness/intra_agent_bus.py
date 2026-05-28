@@ -1,4 +1,4 @@
-"""Intra-agent message bus (PRD §9) — signed inter-agent comms (ASI07). STUB — Phase 2/4.
+"""Intra-agent message bus (PRD §9) - signed inter-agent comms (ASI07). STUB - Phase 2/4.
 
 The channel agents use to message each other. Every message is signed (and verified on receipt) so the
 auditor can detect forged/injected inter-agent traffic (ASI07); each send emits an ``agent.message`` event.

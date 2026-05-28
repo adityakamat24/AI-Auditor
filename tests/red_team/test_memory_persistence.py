@@ -1,7 +1,7 @@
 """Red-team: the cross-run memory-persistence chained scenario (PRD §15 Phase-4 acceptance).
 
 Asserts the acceptance criterion verbatim: the memory-persistence cross-run test produces the correct
-influence-chain walk — *the run that poisoned, the run that read, the entry that was poisoned* — and
+influence-chain walk - *the run that poisoned, the run that read, the entry that was poisoned* - and
 quarantines the poisoned entry.
 """
 

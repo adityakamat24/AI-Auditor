@@ -2,7 +2,7 @@
 
 The agent calls ``kb_search`` but the ``schema_hash`` field on the event is ``bb * 32`` while the
 trusted tool catalog records ``aa * 32`` for that tool name. The ASI04 detector performs a
-deterministic hash comparison; any mismatch (or unknown tool) is CRITICAL — the tool schema was
+deterministic hash comparison; any mismatch (or unknown tool) is CRITICAL - the tool schema was
 tampered or replaced. No LLM judge is needed.
 
 ``build_attack_trace`` returns the synthetic trace that causes the ASI04 detector to emit a
@@ -33,7 +33,7 @@ def build_attack_trace(run_id: UUID, tenant_id: UUID) -> Trace:
             **kw,
         }
 
-    # The tool call carries a hash that differs from the catalog entry — supply-chain tampering.
+    # The tool call carries a hash that differs from the catalog entry - supply-chain tampering.
     tampered_call = ToolCallStart(
         **_base(),
         agent_id=agent_id,

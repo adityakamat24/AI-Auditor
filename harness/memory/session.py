@@ -1,4 +1,4 @@
-"""Session memory (PRD §9) — short-lived per-run KV store. STUB — implemented in Phase 4.
+"""Session memory (PRD §9) - short-lived per-run KV store. STUB - implemented in Phase 4.
 
 Per-run working memory backed by Redis (TTL-scoped). Reads/writes emit voluntary ``memory.read`` /
 ``memory.write`` events tagged ``store="session"``. ``redis`` is a base dep, imported lazily in the methods.

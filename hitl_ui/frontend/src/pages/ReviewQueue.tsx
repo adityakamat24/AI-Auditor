@@ -1,5 +1,5 @@
 /**
- * Review queue — operator-facing list of open flags. Clean light-first layout.
+ * Review queue - operator-facing list of open flags. Clean light-first layout.
  *
  * Filters: severity / status / ASI category / tenant. WS push updates in place.
  */

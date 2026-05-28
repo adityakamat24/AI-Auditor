@@ -1,6 +1,6 @@
 """Deterministic offline embedder for tests/CI/dev (no model download).
 
-Produces stable, dimension-correct vectors by hashing the input. Not semantically meaningful —
+Produces stable, dimension-correct vectors by hashing the input. Not semantically meaningful -
 only used where a real embedder would force a heavy download (CI) or where determinism is required.
 """
 

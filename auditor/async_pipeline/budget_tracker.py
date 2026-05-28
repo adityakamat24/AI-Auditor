@@ -1,4 +1,4 @@
-"""Per-tenant daily LLM budget tracker (PRD §9.6) — the sampler's L3 gate.
+"""Per-tenant daily LLM budget tracker (PRD §9.6) - the sampler's L3 gate.
 
 Tracks judge spend per (tenant, UTC day). ``has_budget`` is synchronous (the sampler calls it on the
 decision path); ``record_cost`` is called by the judge after each call. In-memory is correct for a

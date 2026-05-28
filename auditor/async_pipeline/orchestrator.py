@@ -5,7 +5,7 @@ single :class:`~auditor.verdicts.aggregator.Flag`. A detector that raises does N
 converted into a conservative ``NEEDS_REVIEW`` verdict so the failure surfaces rather than silently
 passing (a detector we cannot trust is not the same as a clean run).
 
-The judge is not injected here — judge-driven detectors call :func:`auditor.judge.client.get_judge`
+The judge is not injected here - judge-driven detectors call :func:`auditor.judge.client.get_judge`
 themselves, so verdict caching and abstain→Sonnet escalation live at that seam.
 
 Lifecycle-aware routing (PRD §9.13)
@@ -69,7 +69,7 @@ def ensure_detectors_registered() -> dict:
     """Import the ten detector modules so they self-register.
 
     Robust to a prior ``clear_registry()`` (which some unit tests call): if the registry is short after
-    import — meaning the modules were already imported and then cleared — reload them to re-run
+    import - meaning the modules were already imported and then cleared - reload them to re-run
     registration.
     """
     modules = [importlib.import_module(name) for name in _DETECTOR_MODULES]

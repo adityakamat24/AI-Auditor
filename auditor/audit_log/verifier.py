@@ -1,4 +1,4 @@
-"""Audit-log verifier (PRD §9.11.1) — validate a tenant's hash chain.
+"""Audit-log verifier (PRD §9.11.1) - validate a tenant's hash chain.
 
 Walks a tenant's audit-log entries in ``seq`` order and recomputes the chain, detecting any insertion,
 deletion, reorder, or mutation. Exposed both programmatically (:class:`AuditLogVerifier`) and as a CLI:

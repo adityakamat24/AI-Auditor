@@ -1,17 +1,17 @@
 """Auth routes for the AI Auditor API (PRD §11.1 / Phase 7).
 
 Provides:
-  POST /auth/login  — local-password fallback for dev (role always from DB, never caller-supplied).
-  GET  /auth/me     — return the current token's claims (requires any valid token).
+  POST /auth/login  - local-password fallback for dev (role always from DB, never caller-supplied).
+  GET  /auth/me     - return the current token's claims (requires any valid token).
 
-Router name: ``auth_router`` — registered by ``auditor/main.py`` (do NOT register here).
+Router name: ``auth_router`` - registered by ``auditor/main.py`` (do NOT register here).
 
-# Architecture note — no password column on User
+# Architecture note - no password column on User
 # -----------------------------------------------
 # The ``User`` model has NO password / password_hash column (see auditor/db/models.py).
 # Dev login is therefore gated by ``Settings.auth_dev_login_enabled`` (default True in dev)
 # and issues a token purely from the DB row's ``role``.  In a real deployment, OIDC replaces
-# this entirely.  A user cannot influence their token's role — it comes from the DB row.
+# this entirely.  A user cannot influence their token's role - it comes from the DB row.
 
 # Dependency injection seam
 # -------------------------
@@ -72,7 +72,7 @@ class LoginResponse(BaseModel):
     """Body returned by POST /auth/login."""
 
     access_token: str
-    token_type: str = "bearer"  # noqa: S105 — "bearer" is an OAuth2 token type, not a password
+    token_type: str = "bearer"  # noqa: S105 - "bearer" is an OAuth2 token type, not a password
     role: str
     user_id: str
     tenant_id: str
@@ -116,19 +116,19 @@ async def login(
     ---------
     - Requires ``Settings.auth_dev_login_enabled`` to be True (default in dev).
     - Looks up the ``User`` by email in the DB.
-    - Issues a signed HMAC token whose **role comes from the DB row** — the caller cannot
+    - Issues a signed HMAC token whose **role comes from the DB row** - the caller cannot
       choose a role at login time.  A reviewer logging in always gets a reviewer token.
     - Sets the token as an HTTP-only ``session`` cookie AND returns it in the response body.
 
-    The ``User`` model has **no password column** (by design — passwords are an OIDC concern).
+    The ``User`` model has **no password column** (by design - passwords are an OIDC concern).
     In dev mode the password field is accepted for API surface compatibility but is not
     validated against any stored hash.  When OIDC is configured, use the IdP flow instead.
 
     Raises
     ------
-    HTTP 403  — if ``auth_dev_login_enabled`` is False (prod lockout).
-    HTTP 404  — if no user with that email exists.
-    HTTP 401  — reserved for OIDC failures (not used in local-fallback path).
+    HTTP 403  - if ``auth_dev_login_enabled`` is False (prod lockout).
+    HTTP 404  - if no user with that email exists.
+    HTTP 401  - reserved for OIDC failures (not used in local-fallback path).
     """
     settings = get_settings()
 
@@ -145,7 +145,7 @@ async def login(
             detail=f"No user with email '{body.email}' found.",
         )
 
-    # Role is ALWAYS from the DB row — the caller has zero influence over it.
+    # Role is ALWAYS from the DB row - the caller has zero influence over it.
     token = issue_token(
         user_id=str(user.user_id),
         tenant_id=str(user.tenant_id),
@@ -171,7 +171,7 @@ async def login(
 
     return LoginResponse(
         access_token=token,
-        token_type="bearer",  # noqa: S106 — OAuth2 token type, not a password argument
+        token_type="bearer",  # noqa: S106 - OAuth2 token type, not a password argument
         role=user.role,
         user_id=str(user.user_id),
         tenant_id=str(user.tenant_id),

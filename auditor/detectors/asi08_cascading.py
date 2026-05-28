@@ -1,7 +1,7 @@
 """ASI08 Cascading Agent Failures detector (PRD §9.7.8).
 
 Circuit-breaker style post-hoc check: if any ``(agent, tool)`` pair produces more than ``_ERROR_K``
-errored ``ToolCallEnd`` events within the trace, the breaker should have opened — the agent is in a
+errored ``ToolCallEnd`` events within the trace, the breaker should have opened - the agent is in a
 retry/error spiral that can cascade. That pair -> VIOLATION.
 
 ``ToolCallEnd`` carries ``agent_id`` + ``tool_call_id`` + ``status`` but not the tool name, so we

@@ -1,6 +1,6 @@
 """Unit tests for auditor.incidents.lifecycle and auditor.incidents.service.
 
-No DB required — all objects are simple in-memory mock objects.
+No DB required - all objects are simple in-memory mock objects.
 
 Coverage:
   - Full happy path: OPEN→TRIAGING→INVESTIGATING→CONTAINED→RESOLVED→POST_MORTEM_COMPLETE
@@ -101,9 +101,9 @@ class TestHappyPath:
     def test_dismissed_with_rationale(self):
         inc = _make_incident(state="OPEN")
         sm = IncidentStateMachine()
-        sm.transition(inc, "DISMISSED", actor_role="reviewer", rationale="False positive — noisy rule")
+        sm.transition(inc, "DISMISSED", actor_role="reviewer", rationale="False positive - noisy rule")
         assert inc.state == "DISMISSED"
-        assert inc.dismissal_rationale == "False positive — noisy rule"
+        assert inc.dismissal_rationale == "False positive - noisy rule"
 
     def test_admin_can_resolve(self):
         inc = _make_incident(state="CONTAINED")

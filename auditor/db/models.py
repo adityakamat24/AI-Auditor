@@ -1,10 +1,10 @@
-"""SQLAlchemy 2.0 ORM models — the full schema (PRD §8.1 plus the tables defined in §9.7.6,
+"""SQLAlchemy 2.0 ORM models - the full schema (PRD §8.1 plus the tables defined in §9.7.6,
 §9.7.10, §9.10.5, §9.11.4, §9.13, §11.4).
 
 These models are the single source of truth for table structure; the Alembic migration creates the
 required extensions, builds the schema from this metadata, and enables row-level security. The
 ``memory_embeddings.embedding`` vector dimension is read from configuration (``EMBEDDING_DIM``),
-NOT hardcoded — see plan deviation #2.
+NOT hardcoded - see plan deviation #2.
 """
 
 from __future__ import annotations

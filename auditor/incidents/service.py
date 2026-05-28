@@ -1,9 +1,9 @@
 """Incident service layer (PRD §9.10.5).
 
 Provides:
-  - ``open_incident_for_flag`` — creates an Incident for a High/Critical flag.
-  - ``add_comment`` / ``add_action_item`` — helper writers.
-  - ``find_similar`` — deterministic cross-incident correlation (no embeddings).
+  - ``open_incident_for_flag`` - creates an Incident for a High/Critical flag.
+  - ``add_comment`` / ``add_action_item`` - helper writers.
+  - ``find_similar`` - deterministic cross-incident correlation (no embeddings).
 """
 
 from __future__ import annotations
@@ -31,7 +31,7 @@ def open_incident_for_flag(flag: Any) -> Incident | None:
     """Create and return a new ``Incident`` ORM object for *flag*.
 
     Returns ``None`` for low/medium severity flags (no incident opened).
-    The returned object is NOT yet added to a session — callers do ``session.add(incident)``
+    The returned object is NOT yet added to a session - callers do ``session.add(incident)``
     after any additional setup (e.g. paging for critical incidents).
 
     Args:
@@ -116,7 +116,7 @@ def build_action_item(
 def find_similar(incident: Any, recent: list[Any]) -> list[tuple[Any, int]]:
     """Return *recent* incidents ranked by similarity to *incident*.
 
-    Similarity is a deterministic score over four axes — no embeddings, no ML:
+    Similarity is a deterministic score over four axes - no embeddings, no ML:
 
     * detector match      → +3 points  (strongest signal: same detector fired)
     * ASI category overlap → +2 per shared category  (weighted by count)
@@ -128,7 +128,7 @@ def find_similar(incident: Any, recent: list[Any]) -> list[tuple[Any, int]]:
         with zero-score incidents excluded.
 
     Args:
-        incident: The reference incident.  Expected attributes (all optional — falls
+        incident: The reference incident.  Expected attributes (all optional - falls
                   back gracefully to empty): ``primary_flag_id``, ``_detector``,
                   ``_asi_categories``, ``_agent_role``, ``_tools``.
         recent: Candidate incidents to compare against (from the last 30 days, say).

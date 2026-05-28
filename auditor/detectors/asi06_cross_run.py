@@ -1,7 +1,7 @@
 """ASI06 cross-run memory-poisoning machinery (PRD §9.7.6 items 5-8).
 
 Single-run scanning lives in :mod:`auditor.detectors.asi06_memory_poisoning`. This module adds the
-cross-session part that makes ASI06 actually defensible against the hardest attacks — where memory is
+cross-session part that makes ASI06 actually defensible against the hardest attacks - where memory is
 poisoned in run A and the poison fires in a *later* run B:
 
 - **Provenance graph** (item 5): every memory entry records ``created_in_run_id``, ``source``,
@@ -196,7 +196,7 @@ def walk_influence_chain(
             if quarantine:
                 store.quarantine(entry_id)
                 chain.quarantined_entry_ids.append(entry_id)
-            # The writer run may itself have read poison — inspect it at the next hop.
+            # The writer run may itself have read poison - inspect it at the next hop.
             frontier.append((entry.created_in_run_id, hop + 1))
 
     return chain

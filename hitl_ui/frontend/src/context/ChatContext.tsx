@@ -1,5 +1,5 @@
 /**
- * Chat session state — lives above the router so it survives navigation between tabs.
+ * Chat session state - lives above the router so it survives navigation between tabs.
  *
  * Holds the turn thread + sign-in state + a single background poller that refreshes any pending
  * agent turn (so verdicts keep arriving even while the user is on another page).
@@ -82,7 +82,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }): React
   useEffect(() => {
     const onExpired = () => {
       setToken(null);
-      setError("Your session expired — please sign in again.");
+      setError("Your session expired - please sign in again.");
     };
     window.addEventListener("hitl:auth-expired", onExpired);
     return () => window.removeEventListener("hitl:auth-expired", onExpired);

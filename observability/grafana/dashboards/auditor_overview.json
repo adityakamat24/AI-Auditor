@@ -1,7 +1,7 @@
 {
   "uid": "auditor-overview",
   "title": "Auditor Overview",
-  "description": "Throughput, gate decisions, judge latency, active runs — AI Auditor Phase 7",
+  "description": "Throughput, gate decisions, judge latency, active runs - AI Auditor Phase 7",
   "tags": ["ai-auditor", "overview"],
   "schemaVersion": 39,
   "version": 2,

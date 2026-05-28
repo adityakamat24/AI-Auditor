@@ -37,7 +37,7 @@ function authHeaders(): HeadersInit {
 }
 
 /**
- * Silent re-auth — when a request 401s mid-session, try to grab a fresh dev JWT using the email the
+ * Silent re-auth - when a request 401s mid-session, try to grab a fresh dev JWT using the email the
  * user signed in with (stored in localStorage on devLogin success). Shared promise so concurrent
  * 401s don't trigger N parallel logins; cleared 1s after settling so the next failure can retry.
  */
@@ -79,14 +79,14 @@ async function request<T>(path: string, init?: RequestInit, _retried = false): P
   } catch (e) {
     // `fetch` rejects with TypeError on network-level failures (server down, CORS reject,
     // connection drop during the request). Surface a friendlier message than "Failed to fetch".
-    throw new Error(`Auditor unreachable at ${BASE} — check the backend is running on :8000`);
+    throw new Error(`Auditor unreachable at ${BASE} - check the backend is running on :8000`);
   }
 
   // Token-expired path: try a single silent re-auth, then retry the original request.
   if (res.status === 401 && !_retried && getToken()) {
     const refreshed = await tryRefresh();
     if (refreshed) return request<T>(path, init, true);
-    // Refresh failed — drop the stale token and notify the UI to re-prompt sign-in.
+    // Refresh failed - drop the stale token and notify the UI to re-prompt sign-in.
     localStorage.removeItem("hitl_token");
     window.dispatchEvent(new Event("hitl:auth-expired"));
   }
@@ -124,7 +124,7 @@ export function getFlags(filters: FlagFilters = {}): Promise<Flag[]> {
 }
 
 /**
- * Flag detail — backend returns `{flag, trace}`; we unwrap so callers get the Flag directly.
+ * Flag detail - backend returns `{flag, trace}`; we unwrap so callers get the Flag directly.
  * Use `getFlagDetail` if you want the trace in the same call (avoids a second round-trip).
  */
 export async function getFlag(flagId: string): Promise<Flag> {
@@ -200,7 +200,7 @@ export function getIncidents(filters: IncidentFilters = {}): Promise<Incident[]>
 }
 
 /**
- * Incident detail — backend returns `{incident, comments, action_items, similar}` so the queue page
+ * Incident detail - backend returns `{incident, comments, action_items, similar}` so the queue page
  * gets everything in one round-trip. `getIncident` unwraps to the bare Incident for callers that
  * don't need the rest (e.g. legacy code paths); `getIncidentDetail` returns the full envelope.
  */

@@ -1,6 +1,6 @@
-"""Instruction-Following / Goal-Adherence detector (Check #1 — PRD §9.7.1 / §9.7.10 family).
+"""Instruction-Following / Goal-Adherence detector (Check #1 - PRD §9.7.1 / §9.7.10 family).
 
-The headline check: *is the agent doing what the user asked, or deviating — and how?* It assembles the
+The headline check: *is the agent doing what the user asked, or deviating - and how?* It assembles the
 run's declared instruction, the ordered tool calls the agent actually made, and its final output, then
 asks the LLM judge to score adherence and name the specific deviations. Indirect prompt injection
 (acting on instructions hidden in retrieved content) and unrequested sensitive actions are deviations.

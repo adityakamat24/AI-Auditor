@@ -88,7 +88,7 @@ async def test_rls_tenant_isolation() -> None:
 
     try:
         # ------------------------------------------------------------------
-        # Step 1: system session — insert test data, no GUC set.
+        # Step 1: system session - insert test data, no GUC set.
         # Flush after each dependency level so FK checks resolve against
         # already-persisted rows (tenants → runs → flags).
         # ------------------------------------------------------------------
@@ -103,7 +103,7 @@ async def test_rls_tenant_isolation() -> None:
             await _insert_flag(session, flag_id=flag_b, run_id=run_b, tenant_id=tenant_b)
 
         # ------------------------------------------------------------------
-        # Step 2: session scoped to tenant A — only A's rows visible.
+        # Step 2: session scoped to tenant A - only A's rows visible.
         # ------------------------------------------------------------------
         async with sessionmaker() as session:
             async with tenant_scope(session, tenant_a):
@@ -119,7 +119,7 @@ async def test_rls_tenant_isolation() -> None:
         assert run_b not in run_ids_a, "tenant A must NOT see tenant B's run"
 
         # ------------------------------------------------------------------
-        # Step 3: session scoped to tenant B — only B's rows visible.
+        # Step 3: session scoped to tenant B - only B's rows visible.
         # ------------------------------------------------------------------
         async with sessionmaker() as session:
             async with tenant_scope(session, tenant_b):
@@ -135,7 +135,7 @@ async def test_rls_tenant_isolation() -> None:
         assert run_a not in run_ids_b, "tenant B must NOT see tenant A's run"
 
         # ------------------------------------------------------------------
-        # Step 4: system session (no GUC) — both tenants' rows are visible.
+        # Step 4: system session (no GUC) - both tenants' rows are visible.
         # ------------------------------------------------------------------
         async with sessionmaker() as session:
             all_flag_rows = (await session.execute(select(Flag))).scalars().all()

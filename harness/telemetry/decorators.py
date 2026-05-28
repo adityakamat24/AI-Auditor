@@ -1,4 +1,4 @@
-"""Telemetry decorators (PRD §9.1) — the gating decorator + an AG2 binder.
+"""Telemetry decorators (PRD §9.1) - the gating decorator + an AG2 binder.
 
 ``@instrumented_tool`` tags an async tool function with a :class:`ToolMeta` (its catalog name and an
 optional declared purpose) without changing its behavior. :class:`GatedToolset` runs a tagged tool
@@ -55,7 +55,7 @@ class GatedToolset:
     async def call(self, fn: AsyncTool, /, **kwargs: Any) -> Any:
         """Gate then run ``fn(**kwargs)``; a DENY raises ``GateDeniedError`` out of here.
 
-        The tool's result is summarized onto the call handle so it rides the ToolCallEnd event — giving
+        The tool's result is summarized onto the call handle so it rides the ToolCallEnd event - giving
         the auditor visibility into what the agent ingested/produced (untrusted content, exfil payloads).
         """
         meta: ToolMeta = fn.tool_meta  # type: ignore[attr-defined]

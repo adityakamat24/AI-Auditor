@@ -1,1 +1,1 @@
-"""ASI02 — Tool Misuse & Exploitation adversarial attack."""
+"""ASI02 - Tool Misuse & Exploitation adversarial attack."""

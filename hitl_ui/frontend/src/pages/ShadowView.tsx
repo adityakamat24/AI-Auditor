@@ -1,5 +1,5 @@
 /**
- * Shadow detector performance — verdicts from detectors not yet ENFORCING.
+ * Shadow detector performance - verdicts from detectors not yet ENFORCING.
  *
  * Light-first visual, soft pastels, clean tabs.
  */
@@ -125,7 +125,7 @@ export default function ShadowView(): React.ReactElement {
         <div>
           <h1 className="text-[22px] font-semibold text-gray-900 dark:text-gray-100 tracking-tight">Shadow detectors</h1>
           <p className="text-[12px] text-gray-500 dark:text-gray-400 mt-0.5">
-            Verdicts from detectors in SHADOW or CANARY state — zero weight in production, analyzed
+            Verdicts from detectors in SHADOW or CANARY state - zero weight in production, analyzed
             here before promotion to ENFORCING.
           </p>
         </div>
@@ -161,7 +161,7 @@ export default function ShadowView(): React.ReactElement {
         <div className="rounded-xl border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/40 p-3 text-[13px] text-red-700 dark:text-red-300">
           {error}
           <p className="text-[11px] text-red-500 mt-1">
-            (No shadow detectors are processing yet — promote one to SHADOW state to populate this view.)
+            (No shadow detectors are processing yet - promote one to SHADOW state to populate this view.)
           </p>
         </div>
       )}
@@ -222,7 +222,7 @@ export default function ShadowView(): React.ReactElement {
                         </span>
                       </td>
                       <td className="px-4 py-3 text-gray-500 dark:text-gray-400 text-[11px] whitespace-nowrap">
-                        {s.last_verdict_at ? new Date(s.last_verdict_at).toLocaleString() : "—"}
+                        {s.last_verdict_at ? new Date(s.last_verdict_at).toLocaleString() : "-"}
                       </td>
                     </tr>
                   ))}

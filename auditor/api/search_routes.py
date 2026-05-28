@@ -1,19 +1,19 @@
 """Audit search API (PRD §9.11.4 §15 Phase-8).
 
 Endpoints:
-  POST /audit/search              — run a DSL query scoped to the caller's tenant.
-  POST /audit/saved-queries       — save a named (optionally parameterised) query (admin only).
-  GET  /audit/saved-queries       — list saved queries for the caller's tenant.
-  POST /audit/saved-queries/{id}/run — bind params and run a saved query.
+  POST /audit/search              - run a DSL query scoped to the caller's tenant.
+  POST /audit/saved-queries       - save a named (optionally parameterised) query (admin only).
+  GET  /audit/saved-queries       - list saved queries for the caller's tenant.
+  POST /audit/saved-queries/{id}/run - bind params and run a saved query.
 
-# Architecture note — DB-free seams for testing
+# Architecture note - DB-free seams for testing
 # -----------------------------------------------
 # All database access goes through module-level helper functions (``_insert_saved_query``,
 # ``_list_saved_queries``, ``_get_saved_query``) that accept an AsyncSession argument.
 # Tests override ``get_db_session`` via ``app.dependency_overrides`` without touching any
 # real database (mirroring the pattern in auditor.api.hitl_routes).
 
-Router name: ``search_router`` — registered by ``auditor/main.py``; do NOT register here.
+Router name: ``search_router`` - registered by ``auditor/main.py``; do NOT register here.
 """
 
 from __future__ import annotations
@@ -120,7 +120,7 @@ async def search(
 ) -> list[dict]:
     """Run a DSL query scoped to the caller's tenant.
 
-    The query is automatically RLS-scoped — a reviewer in tenant A sees only tenant A rows.
+    The query is automatically RLS-scoped - a reviewer in tenant A sees only tenant A rows.
     """
     tenant_id: str = claims["tenant_id"]
     try:

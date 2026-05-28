@@ -6,8 +6,8 @@ At catalog-publish time the orchestrator calls :func:`publish_catalog` to captur
 fingerprint of every tool implementation file.  Those fingerprints are persisted alongside the
 catalog (e.g. in run metadata or a side-car manifest).  At run-start time the orchestrator calls
 :func:`verify_catalog_integrity` to re-hash the current files and compare them against the
-published manifest.  Any discrepancy — a modified file, a tool removed after publish, or a tool
-added that was not present at publish — produces a CRITICAL :class:`~auditor.verdicts.schemas.Verdict`
+published manifest.  Any discrepancy - a modified file, a tool removed after publish, or a tool
+added that was not present at publish - produces a CRITICAL :class:`~auditor.verdicts.schemas.Verdict`
 and must fail the run.
 
 This is a standalone startup check.  It is NOT registered in the detector registry; the per-event
@@ -32,7 +32,7 @@ def hash_tool_file(path: str | Path) -> str:
     """Return the sha256 hex-digest of *path*'s raw bytes.
 
     Raises :class:`FileNotFoundError` if *path* does not exist, and
-    :class:`OSError` for other I/O problems — callers should handle these
+    :class:`OSError` for other I/O problems - callers should handle these
     appropriately (a missing file that *was* present at publish time is a
     CRITICAL integrity violation).
     """
@@ -86,7 +86,7 @@ def verify_catalog_integrity(
       (new, un-audited tool injected after catalog publish).
 
     Returns an empty list (with a single OK verdict) when all hashes match and
-    no tools were added or removed — matching the style of
+    no tools were added or removed - matching the style of
     :mod:`auditor.detectors.asi04_supply_chain`.
 
     Args:
@@ -97,7 +97,7 @@ def verify_catalog_integrity(
         tenant_id: The tenant UUID (passed through to each :class:`Verdict`).
 
     Returns:
-        A list of :class:`Verdict` objects — one OK verdict if everything
+        A list of :class:`Verdict` objects - one OK verdict if everything
         matches, or one CRITICAL VIOLATION verdict per discrepancy found.
     """
     evidence: list[Evidence] = []

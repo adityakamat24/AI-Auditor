@@ -1,4 +1,4 @@
-"""Audit-log writer (PRD §9.11.1) — append hash-chained, tamper-evident entries.
+"""Audit-log writer (PRD §9.11.1) - append hash-chained, tamper-evident entries.
 
 Each entry's ``chain_hash`` links to the previous entry for the same tenant, so any insertion, deletion,
 reorder, or mutation breaks the chain (detected by :mod:`auditor.audit_log.verifier`). Appends are
@@ -34,7 +34,7 @@ class AuditLogWriter:
     ) -> bytes:
         """Append one entry; returns its ``chain_hash``.
 
-        ``payload`` is hashed (not stored inline — the redacted blob goes to ``blob_uri``); the rest are
+        ``payload`` is hashed (not stored inline - the redacted blob goes to ``blob_uri``); the rest are
         the structured columns the audit log indexes on.
         """
         body = payload or {}

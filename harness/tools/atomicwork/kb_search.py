@@ -1,7 +1,7 @@
 """Atomicwork tool: search the knowledge base (PRD §9.7).
 
 Benign read against a mocked ITSM knowledge base: returns canned resolution articles for ``query``. No
-declared purpose — a read-only lookup the gate allows by default.
+declared purpose - a read-only lookup the gate allows by default.
 """
 
 from __future__ import annotations

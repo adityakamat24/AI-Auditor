@@ -7,7 +7,7 @@ scoring a run it calls :meth:`BaselineStore.baseline`, which yields exactly the
 ``{"z_threshold", "axes": {axis: {"mean", "std"}}}`` shape the ASI10 detector consumes.
 
 The running mean/variance use Welford's online algorithm (numerically stable, O(1) memory per axis). The
-PRD references a t-digest; a t-digest adds *quantile* estimation, which we don't need for z-score drift —
+PRD references a t-digest; a t-digest adds *quantile* estimation, which we don't need for z-score drift -
 mean/std are sufficient and exact for streaming updates. A t-digest (or a Redis-backed store) can replace
 the in-memory accumulator behind the same interface if quantile-based gating is added later.
 """

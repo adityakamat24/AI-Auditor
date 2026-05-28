@@ -1,5 +1,5 @@
 /**
- * Top nav — clean white (or dark) sticky bar with live counts beside each tab.
+ * Top nav - clean white (or dark) sticky bar with live counts beside each tab.
  *
  * Counts are polled every 10s while the tab is visible; pauses when hidden to be a good citizen.
  * The pulsing "auditor online" pip flips to red if /health stops returning 200.

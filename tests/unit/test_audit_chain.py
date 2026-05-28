@@ -68,7 +68,7 @@ def test_deletion_is_detected() -> None:
 
 
 def test_verifier_works_on_real_row_type() -> None:
-    # verify_chain is duck-typed on seq/payload_hash/chain_hash — confirm the ORM row satisfies it.
+    # verify_chain is duck-typed on seq/payload_hash/chain_hash - confirm the ORM row satisfies it.
     prev = GENESIS_HASH
     rows: list[AuditLogRow] = []
     for i, payload in enumerate([{"a": 1}, {"a": 2}], start=1):

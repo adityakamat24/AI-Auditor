@@ -9,7 +9,7 @@ Covers:
   - Cookie is set on successful login.
   - verify_oidc_token raises NotImplementedError when OIDC_ISSUER is unconfigured.
 
-All DB access is replaced with in-memory fakes via dependency_overrides — no live DB required.
+All DB access is replaced with in-memory fakes via dependency_overrides - no live DB required.
 """
 
 from __future__ import annotations
@@ -113,7 +113,7 @@ def _make_app(user: Any | None = None) -> FastAPI:
 
 class TestLoginEndpoint:
     def test_reviewer_login_gets_reviewer_token(self):
-        """A reviewer logging in must receive a reviewer token — never admin."""
+        """A reviewer logging in must receive a reviewer token - never admin."""
         user = _make_fake_user(email="rv@example.com", role="reviewer")
         app = _make_app(user=user)
         client = TestClient(app, raise_server_exceptions=False)

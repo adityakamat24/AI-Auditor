@@ -25,7 +25,7 @@ def test_rate_full_always_samples() -> None:
 
 
 def test_one_percent_vs_five_percent_bucketing() -> None:
-    # The same deterministic hash bucket is included at 5% but excluded at 1% for some runs — proving the
+    # The same deterministic hash bucket is included at 5% but excluded at 1% for some runs - proving the
     # configured rate actually changes selection. Count selection across many runs.
     def sampled_fraction(rate: float) -> float:
         sampler = get_sampler(_settings(sampler_default_rate=rate))
