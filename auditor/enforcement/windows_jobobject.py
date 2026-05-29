@@ -36,6 +36,65 @@ class WindowsJobObjectEnforcer(Enforcer):
         self._pids.pop(key, None)
         self._jobs.pop(key, None)
 
+    def create_job_for_spawned_process(self, run_id: UUID | str, pid: int) -> bool:
+        """Create a Job Object with ``KILL_ON_JOB_CLOSE``, attach ``pid``, and register the run.
+
+        Companion to :meth:`register` for the inline-spawn case (an in-process launcher like
+        :class:`auditor.harness_runner.HarnessRun` that needs to attach a process it just
+        spawned). The kill-on-job-close semantic is what gives us "harness dies when the
+        auditor dies" - including the auditor-SIGKILL case where ``atexit`` never fires:
+        Windows closes our last handle on process death, the job has no remaining handles,
+        and the kernel terminates every process in the job.
+
+        Returns ``True`` on success. Returns ``False`` (degraded - registers ``pid`` for
+        pause/resume/abort but no kill-on-parent-death guarantee) if the assign fails. The
+        most common failure is nested-job environments (VS Code's integrated terminal, Fly's
+        process supervisor) where the parent's job disallows breakaway; the caller should
+        spawn with ``CREATE_BREAKAWAY_FROM_JOB`` to give us the best shot.
+        """
+        try:
+            import win32api  # type: ignore[import-not-found]
+            import win32con  # type: ignore[import-not-found]
+            import win32job  # type: ignore[import-not-found]
+        except ImportError as exc:  # pragma: no cover - pywin32 is a Windows-only dep
+            log.warning("enforcement.pywin32_missing", error=str(exc))
+            self.register(run_id, pid)
+            return False
+
+        try:
+            job = win32job.CreateJobObject(None, "")
+            info = win32job.QueryInformationJobObject(
+                job, win32job.JobObjectExtendedLimitInformation
+            )
+            info["BasicLimitInformation"]["LimitFlags"] |= (
+                win32job.JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE
+            )
+            win32job.SetInformationJobObject(
+                job, win32job.JobObjectExtendedLimitInformation, info
+            )
+            # PROCESS_SET_QUOTA + PROCESS_TERMINATE are the minimum rights AssignProcessToJob
+            # requires (per AssignProcessToJobObject docs). Use OpenProcess so we keep the
+            # spawn flow agnostic to how the caller got the pid.
+            access = win32con.PROCESS_SET_QUOTA | win32con.PROCESS_TERMINATE
+            process_handle = win32api.OpenProcess(access, False, pid)
+            try:
+                win32job.AssignProcessToJobObject(job, process_handle)
+            finally:
+                win32api.CloseHandle(process_handle)
+        except Exception as exc:  # noqa: BLE001 - cleanup + degrade rather than crash spawn
+            log.warning(
+                "enforcement.job_create_failed",
+                run_id=str(run_id),
+                pid=pid,
+                error=str(exc),
+            )
+            self.register(run_id, pid)
+            return False
+
+        self.register(run_id, pid, job_handle=job)
+        log.info("enforcement.job_attached", run_id=str(run_id), pid=pid)
+        return True
+
     def _pid(self, run_id: UUID | str) -> int | None:
         return self._pids.get(str(run_id))
 
