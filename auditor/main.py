@@ -142,11 +142,28 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
             log.info("auditor.orphan_runs_reaped", count=orphans)
     except Exception as exc:  # noqa: BLE001 - DB may not be up yet on a brand-new deploy; don't block boot
         log.warning("auditor.orphan_sweep_failed", error=str(exc))
+    # Hand the main event loop to the harness runner so its reaper thread can dispatch async
+    # DB writes onto the same loop the SQLAlchemy engine is bound to (asyncpg futures can't
+    # cross loops). Without this, the reaper's mark_run_completed call fails with
+    # "Future attached to a different loop" and the run only gets marked terminal via the IPC
+    # disconnect path.
+    import asyncio as _asyncio
+
+    from auditor.harness_runner import set_main_loop
+
+    set_main_loop(_asyncio.get_running_loop())
     await _start_ipc_server(app)
     log.info("auditor.started", version=__version__, env=settings.auditor_env)
     try:
         yield
     finally:
+        # Drop the loop reference first so any in-flight reaper that hasn't dispatched yet
+        # silently skips its DB write rather than scheduling against a loop that's about to
+        # close.
+        with contextlib.suppress(Exception):
+            from auditor.harness_runner import set_main_loop
+
+            set_main_loop(None)
         if getattr(app.state, "ipc_server", None) is not None:
             await app.state.ipc_server.stop()
         if getattr(app.state, "opa", None) is not None:

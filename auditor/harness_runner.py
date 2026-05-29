@@ -25,6 +25,7 @@ The route handler in :mod:`auditor.api.agent_routes` is reduced to: build the re
 
 from __future__ import annotations
 
+import asyncio
 import atexit
 import os
 import signal
@@ -167,6 +168,20 @@ _LIVE_RUNS_LOCK = threading.Lock()
 # /agent/runs/{id} for the final state; once it sees ``audited=true`` it stops, and the DB
 # row is the source of truth from then on. A 30 min grace is plenty for slow pollers.
 _REGISTRY_TTL_SECONDS = 30 * 60
+
+# Reference to the auditor's main asyncio event loop, captured during FastAPI lifespan startup
+# (see :func:`auditor.main.lifespan`). The reaper thread uses this to schedule the DB-status
+# write on the same loop the SQLAlchemy async engine is bound to. Without this, the reaper
+# would call ``asyncio.run(...)`` which creates a NEW loop - and asyncpg futures attached to
+# the main loop can't be awaited from a different loop. The result is a noisy
+# "Future attached to a different loop" error and a no-op DB write.
+_MAIN_LOOP: asyncio.AbstractEventLoop | None = None
+
+
+def set_main_loop(loop: asyncio.AbstractEventLoop | None) -> None:
+    """Record the auditor's main event loop so reaper threads can dispatch DB writes onto it."""
+    global _MAIN_LOOP  # noqa: PLW0603
+    _MAIN_LOOP = loop
 
 
 class HarnessRun:
@@ -394,21 +409,30 @@ class HarnessRun:
                     run_id=self.run_id,
                     error=str(exc),
                 )
-        # Mark the DB row terminal. mark_run_completed is idempotent (only acts on 'running'),
-        # so racing with the IPC disconnect handler is safe; whichever fires first wins. The
-        # reaper runs on a daemon thread without an event loop, so asyncio.run wraps the call.
-        try:
-            from uuid import UUID as _UUID
+        # Mark the DB row terminal. ``mark_run_completed`` is idempotent (only acts on
+        # ``'running'``), so racing with the IPC disconnect handler is safe; whichever fires
+        # first wins. The reaper runs on a daemon thread, so we dispatch the coroutine onto the
+        # auditor's main event loop via ``run_coroutine_threadsafe`` - the SQLAlchemy async
+        # engine and asyncpg's connection pool are bound to that loop and can't be driven from
+        # a freshly-created throwaway loop in this thread. If no main loop is registered
+        # (tests that don't go through ``auditor.main.lifespan``), we silently skip - the
+        # startup sweep on the next boot handles those rows.
+        loop = _MAIN_LOOP
+        if loop is not None and loop.is_running():
+            try:
+                from auditor.events.store import mark_run_completed
 
-            from auditor.events.store import mark_run_completed
-
-            _asyncio.run(mark_run_completed(_UUID(self.run_id)))
-        except Exception as exc:  # noqa: BLE001 - DB write failure is non-fatal for the reaper
-            log.warning(
-                "harness_runner.db_status_update_failed",
-                run_id=self.run_id,
-                error=str(exc),
-            )
+                future = _asyncio.run_coroutine_threadsafe(
+                    mark_run_completed(UUID(self.run_id)), loop
+                )
+                # Bound the wait so a stalled DB doesn't pin the reaper thread forever.
+                future.result(timeout=10.0)
+            except Exception as exc:  # noqa: BLE001 - DB write failure is non-fatal
+                log.warning(
+                    "harness_runner.db_status_update_failed",
+                    run_id=self.run_id,
+                    error=str(exc),
+                )
         log.info(
             "harness_runner.completed",
             run_id=self.run_id,
