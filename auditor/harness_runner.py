@@ -364,7 +364,15 @@ class HarnessRun:
     # ----- lifecycle -----
 
     def _reap(self) -> None:
-        """Block on the child, then close the log handle and finalize status."""
+        """Block on the child, then close the log handle and finalize status.
+
+        Also writes the terminal status to the DB. The IPC ``on_disconnect`` handler usually does
+        this via :func:`auditor.events.store.mark_run_completed`, but it can't fire if the
+        harness was killed without a clean disconnect (Job Object terminate, SIGKILL, OOM). The
+        reaper is the second-line guarantee that ``runs.status`` doesn't stay ``'running'``.
+        """
+        import asyncio as _asyncio
+
         proc = self._proc
         if proc is None:  # pragma: no cover - start() guarantees this is set before reaper
             return
@@ -386,6 +394,21 @@ class HarnessRun:
                     run_id=self.run_id,
                     error=str(exc),
                 )
+        # Mark the DB row terminal. mark_run_completed is idempotent (only acts on 'running'),
+        # so racing with the IPC disconnect handler is safe; whichever fires first wins. The
+        # reaper runs on a daemon thread without an event loop, so asyncio.run wraps the call.
+        try:
+            from uuid import UUID as _UUID
+
+            from auditor.events.store import mark_run_completed
+
+            _asyncio.run(mark_run_completed(_UUID(self.run_id)))
+        except Exception as exc:  # noqa: BLE001 - DB write failure is non-fatal for the reaper
+            log.warning(
+                "harness_runner.db_status_update_failed",
+                run_id=self.run_id,
+                error=str(exc),
+            )
         log.info(
             "harness_runner.completed",
             run_id=self.run_id,

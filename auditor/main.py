@@ -130,6 +130,18 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     )
     await _ensure_buckets(app)
     await _build_gate(app)
+    # Reap runs that were 'running' when we last died. The harness children themselves are
+    # already terminated by the kernel-level kill-on-parent-death mechanisms (PR_SET_PDEATHSIG /
+    # JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE); without this sweep their DB rows stay 'running'
+    # forever and the UI lists them as "in progress" indefinitely.
+    try:
+        from auditor.events.store import reap_orphaned_runs
+
+        orphans = await reap_orphaned_runs()
+        if orphans:
+            log.info("auditor.orphan_runs_reaped", count=orphans)
+    except Exception as exc:  # noqa: BLE001 - DB may not be up yet on a brand-new deploy; don't block boot
+        log.warning("auditor.orphan_sweep_failed", error=str(exc))
     await _start_ipc_server(app)
     log.info("auditor.started", version=__version__, env=settings.auditor_env)
     try:

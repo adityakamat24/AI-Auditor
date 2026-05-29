@@ -13,7 +13,7 @@ import os
 from datetime import UTC, datetime
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import select, text
 
 from auditor.audit_log.redactor import detect_entities, get_redactor
 from auditor.db.models import Event as EventRow
@@ -179,6 +179,32 @@ async def mark_run_completed(run_id: UUID) -> None:
             run.ended_at = datetime.now(tz=UTC)
 
 
+async def reap_orphaned_runs() -> int:
+    """Mark runs that were ``'running'`` at the moment the auditor went down as ``'aborted'``.
+
+    Called once from the FastAPI lifespan startup, BEFORE accepting traffic. Runs end up stuck in
+    ``'running'`` when the auditor dies before the IPC ``on_disconnect`` handler can fire
+    :func:`mark_run_completed` - either because the auditor was killed (SIGKILL, OOM, crash) or
+    because the deploy restarted it while a harness was mid-run. The harness child itself is
+    already dead by then (the kernel mechanisms - PR_SET_PDEATHSIG on Linux,
+    JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE on Windows - terminate it when our process exits), so the
+    correct DB status is ``'aborted'``, not ``'running'``.
+
+    Returns the number of rows updated (useful for telemetry / logging on boot).
+    """
+    sessionmaker = get_sessionmaker()
+    async with sessionmaker() as session, session.begin():
+        result = await session.execute(
+            text(
+                "UPDATE runs "
+                "SET status = 'aborted', "
+                "    ended_at = COALESCE(ended_at, NOW()) "
+                "WHERE status = 'running'"
+            )
+        )
+        return int(result.rowcount or 0)
+
+
 async def update_run_declared_goal(run_id: UUID, declared_goal: str) -> None:
     """Record the user's instruction as the run's declared_goal (called on intent.declare)."""
     sessionmaker = get_sessionmaker()
@@ -338,6 +364,7 @@ __all__ = [
     "payload_hash",
     "upsert_run",
     "mark_run_completed",
+    "reap_orphaned_runs",
     "store_event",
     "store_gate_decision",
     "load_trace",
