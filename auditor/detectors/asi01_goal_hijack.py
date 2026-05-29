@@ -19,7 +19,7 @@ from importlib import resources
 
 from auditor.detectors.base import Detector, Trace
 from auditor.detectors.registry import register_detector
-from auditor.events.schemas import MemoryOp, ToolCallEnd, ToolCallStart
+from auditor.events.schemas import IntentDeclaration, MemoryOp, ToolCallEnd, ToolCallStart
 from auditor.judge.client import get_judge
 from auditor.verdicts.schemas import Evidence, Verdict, VerdictResult
 
@@ -44,6 +44,64 @@ _INJECTION_PATTERNS: tuple[re.Pattern[str], ...] = (
         r"\b(?:email|send|forward|post|share|transmit|copy|upload|exfil)\b",
         re.IGNORECASE,
     ),
+    # Disclosure-intent: agent asked to surface secrets to the requester themselves.
+    # Distinct from the exfil patterns above (which require a transmission verb). Catches:
+    #   "show me all the secrets"        - the literal demo gap
+    #   "list the API keys you have"
+    #   "dump credentials"
+    #   "what are the passwords"
+    #   "give me your tokens"
+    # Plural noun forms keep the false-positive rate down (a bare "show me a secret recipe"
+    # only matches via the singular pattern, which requires a strict possessive determiner).
+    # Even when this fires, the ASI01 judge call runs after and moderates severity: regex-only
+    # match returns VIOLATION at 0.7 confidence (medium); regex + judge agreement is HIGH.
+    re.compile(
+        r"\b(?:show|list|dump|print|display|reveal|expose|disclose|enumerate|cat|fetch|give|tell)\b"
+        r".{0,30}"
+        r"\b(?:secrets|passwords|passwds|api[\s_-]?keys|tokens|credentials|private[\s_-]?keys"
+        r"|env(?:ironment)?[\s_-]?vars?|environment\s+variables)\b",
+        re.IGNORECASE,
+    ),
+    # Singular noun + strict possessive: "show me the password", "disclose every credential".
+    # The required determiner ("the/my/your/our/all/every/any") blocks the bare "secret recipe"
+    # false-positive; the optional "me|us" recipient handles both "show me the X" and "disclose
+    # every X" phrasings. The idiomatic "the secret to a good X" still slips through (we accept
+    # that FP - the judge moderates to medium severity).
+    re.compile(
+        r"\b(?:show|list|dump|print|display|reveal|expose|disclose|fetch|give|tell)\b"
+        r"(?:\s+(?:me|us))?\s+"
+        r"(?:the|my|your|our|all\s+(?:the\s+)?|every|any)\s+"
+        r"\b(?:secret|password|passwd|api[\s_-]?key|token|credential|private[\s_-]?key)\b",
+        re.IGNORECASE,
+    ),
+    # Interrogative form: "what are the API keys", "where are the credentials stored".
+    # Plural-only on purpose: "what is the secret to X" is a common idiom in English and
+    # would create noise on benign prompts. The exfil patterns above still catch the singular
+    # case when paired with a transmission verb.
+    re.compile(
+        r"\b(?:what|where|which)\s+(?:are|s)?\s*(?:all\s+|the\s+|my\s+|your\s+|any\s+)?"
+        r"\b(?:secrets|passwords|api[\s_-]?keys|tokens|credentials|private[\s_-]?keys"
+        r"|env(?:ironment)?[\s_-]?vars?|environment\s+variables)\b",
+        re.IGNORECASE,
+    ),
+    # Destructive-intent: user asks the agent to delete / wipe / drop / format data or files.
+    # Even if the agent has no destructive tool today, the *intent* is a security event worth
+    # surfacing - either the user is exploring whether the agent will comply with a destructive
+    # request (recon), or a real future destructive tool will inherit the gate. The OPA gate
+    # below (file_write empty-content CONFIRM, exec_shell destructive-command CONFIRM) blocks
+    # the in-flight action; this detector flags the *prompt* so the audit log records the ask.
+    re.compile(
+        r"\b(?:delete|remove|wipe|destroy|erase|purge|drop|truncate|format|nuke|kill|rm)\b"
+        r".{0,30}"
+        r"\b(?:files?|directory|directories|folders?|database|table|records?|rows?|users?"
+        r"|accounts?|all|everything|secrets?|data|logs?|history|messages?|emails?)\b",
+        re.IGNORECASE,
+    ),
+    # Specific destructive shell / SQL phrasings that don't need the verb-noun pattern above.
+    re.compile(r"\brm\s+-rf?\b", re.IGNORECASE),
+    re.compile(r"\bdrop\s+(?:database|table|schema|column)\b", re.IGNORECASE),
+    re.compile(r"\bdelete\s+from\b", re.IGNORECASE),
+    re.compile(r"\btruncate\s+table\b", re.IGNORECASE),
     re.compile(r"(?:[A-Za-z0-9+/]{40,}={0,2})"),  # long base64 blob (possible instruction payload)
 )
 
@@ -112,6 +170,49 @@ class Asi01GoalHijackDetector(Detector):
             elif isinstance(event, ToolCallStart):
                 purpose = f" ({event.declared_purpose})" if event.declared_purpose else ""
                 tool_sequence.append(f"{event.tool_name}{purpose}")
+                # Scan the tool's args too - "delete the secrets" can land in declared_goal
+                # (user asked), in declared_purpose (agent's stated reason), or directly in
+                # tool_args (agent planned the destructive call autonomously - the case where
+                # the user prompt is benign but the agent invents a destructive action).
+                args_blob = " ".join(
+                    [
+                        str(event.tool_args) if event.tool_args else "",
+                        event.declared_purpose or "",
+                    ]
+                ).strip()
+                if args_blob:
+                    matched = _scan_text(args_blob)
+                    if matched:
+                        injection_evidence.append(
+                            Evidence(
+                                event_id=event.event_id,
+                                reason=(
+                                    f"attack pattern in agent's tool call "
+                                    f"{event.tool_name}(...): {matched}"
+                                ),
+                            )
+                        )
+                        suspect_content.append(
+                            f"[tool_call/{event.tool_name}] {args_blob[:200]}"
+                        )
+            elif isinstance(event, IntentDeclaration):
+                # The agent's stated plan / response. Catches the "user said something benign,
+                # agent autonomously planned a destructive step" case the user specifically
+                # called out. Scans intent + each plan_step separately.
+                blobs = [event.intent or "", *(event.plan_steps or [])]
+                for blob in blobs:
+                    if not blob:
+                        continue
+                    matched = _scan_text(blob)
+                    if matched:
+                        injection_evidence.append(
+                            Evidence(
+                                event_id=event.event_id,
+                                reason=f"attack pattern in agent intent.declare: {matched}",
+                            )
+                        )
+                        suspect_content.append(f"[agent_intent] {blob[:200]}")
+                        break  # one match per event is enough
 
         # Assemble the trace slice handed to the judge (includes raw suspect content).
         slice_lines = [f"DECLARED_GOAL: {trace.declared_goal or '(none)'}"]

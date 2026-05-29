@@ -58,6 +58,42 @@ confirm_reasons contains msg if {
 	msg := "outbound email contains 'confidential'"
 }
 
+# Destructive file_write: empty content is the common "delete the file" path when the agent
+# only has a write tool. CONFIRM (not DENY) so a reviewer approves explicitly - some legitimate
+# runs truncate intentionally, but the asymmetry (rare and reversible-via-review vs silent data
+# loss) makes CONFIRM the right default. The user-facing intent is also flagged separately by
+# ASI01's destructive-intent patterns on the declared goal.
+confirm_reasons contains msg if {
+	input.event_type == "tool_call.start"
+	input.tool_name == "file_write"
+	object.get(input.tool_args, "content", "") == ""
+	msg := sprintf(
+		"file_write with empty content on %v - reviewer approval required for truncation/deletion",
+		[object.get(input.tool_args, "path", "(unknown path)")],
+	)
+}
+
+# Destructive shell commands embedded in exec_shell args. exec_shell is already DENY without
+# declared_purpose; this rule is the second-line check for the with-purpose case (a declared
+# purpose doesn't make `rm -rf /` safe). CONFIRM so a reviewer signs off, not DENY outright -
+# legitimate ops scripts sometimes need destructive ops.
+destructive_shell_patterns := [
+	"rm -rf", "rm -r", "rm -f", "rmdir",
+	"del /", "rd /", "format ", "format/",
+	"drop table", "drop database", "drop schema",
+	"truncate table", "delete from",
+	"wipe ", "shred ", "mkfs",
+	":(){:|:&};:",  # fork bomb
+]
+
+confirm_reasons contains msg if {
+	input.event_type == "tool_call.start"
+	input.tool_name == "exec_shell"
+	some pat in destructive_shell_patterns
+	contains(lower(object.get(input.tool_args, "command", "")), pat)
+	msg := sprintf("exec_shell destructive pattern %q - reviewer approval required", [pat])
+}
+
 # ---- final decision (mutually-exclusive guards avoid complete-rule conflicts) ----
 
 decision := {"decision": "DENY", "reasons": rs} if {
