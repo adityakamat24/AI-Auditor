@@ -15,7 +15,7 @@ from uuid import UUID
 
 from sqlalchemy import select
 
-from auditor.audit_log.redactor import detect_entities_in_value, get_redactor
+from auditor.audit_log.redactor import detect_entities, get_redactor
 from auditor.db.models import Event as EventRow
 from auditor.db.models import Flag as FlagRow
 from auditor.db.models import GateDecision as GateDecisionRow
@@ -73,16 +73,69 @@ def payload_hash(payload: dict) -> bytes:
 # EVENTS_REDACT_AT_REST=false to disable for debugging - but never in production.
 _REDACT_AT_REST: bool = os.environ.get("EVENTS_REDACT_AT_REST", "true").strip().lower() != "false"
 
-# Fields the detectors must read raw to do their job. ASI01 matches injection markers in tool
-# outputs (those aren't PII so redaction wouldn't touch them anyway), but the user's *declared
-# goal* contains exfil verbs + secret nouns that the goal-hijack regex grades. Redacting an
-# email in the prompt is fine (the patterns key on "API_KEY" / "secret", not on the email);
-# we leave the key set conservative and expand later if a detector regresses.
-_RAW_FIELDS_PRESERVED: frozenset[str] = frozenset()
+# Keys whose values are STRUCTURAL and must NEVER be redacted - UUIDs that Presidio mis-tags
+# as ``<ORGANIZATION>``, content hashes, schema versions, enum statuses. Redacting any of these
+# breaks pydantic validation in ``_row_to_event`` -> the event gets silently dropped from the
+# trace -> detectors can't find what they need (e.g. ASI01 has no result_summary to scan).
+#
+# Rule of thumb: if it's a UUID, a hash, a version int, an enum, or an underscore-prefixed
+# metadata key, it's structural - skip. Free-form content (intent, result_summary, tool_args
+# *values*, output_summary, plan_steps) gets the recognizer pass.
+_STRUCTURAL_KEYS: frozenset[str] = frozenset(
+    {
+        "agent_id", "tool_call_id", "event_id", "run_id", "tenant_id",
+        "span_id", "parent_span_id",
+        "messages_hash", "schema_hash", "payload_hash", "content_hash",
+        "schema_version", "tokens_in", "tokens_out", "pid", "ts_unix_ns",
+        "channel", "event_type", "status", "store", "source",
+        "model",  # model name strings ("claude-haiku-4-5") trigger Presidio's PERSON
+    }
+)
+
+
+def _walk_and_redact(value, redactor, key: str | None = None):
+    """Recursive redaction walker that respects ``_STRUCTURAL_KEYS``.
+
+    A value gets redacted only when it's a string AND its containing dict's key isn't
+    structural. Lists and nested dicts recurse with their own keys. Keys starting with ``_``
+    are treated as metadata and left untouched (e.g. ``_pii_redacted``).
+    """
+    if key is not None and (key in _STRUCTURAL_KEYS or key.startswith("_")):
+        return value
+    if isinstance(value, str):
+        return redactor.redact_text(value)
+    if isinstance(value, dict):
+        return {k: _walk_and_redact(v, redactor, key=k) for k, v in value.items()}
+    if isinstance(value, list):
+        return [_walk_and_redact(item, redactor, key=None) for item in value]
+    return value
+
+
+def _detect_entities_skipping_structural(value, key: str | None = None) -> list[str]:
+    """Entity-type detection that mirrors the walker - skip structural keys to avoid the same
+    false positives the walker avoids (UUID -> ORGANIZATION). Used so ``_pii_redacted`` only
+    lists entities found in free-form content."""
+    if key is not None and (key in _STRUCTURAL_KEYS or key.startswith("_")):
+        return []
+    if isinstance(value, str):
+        return detect_entities(value)
+    found: set[str] = set()
+    if isinstance(value, dict):
+        for k, v in value.items():
+            found.update(_detect_entities_skipping_structural(v, key=k))
+    elif isinstance(value, list):
+        for item in value:
+            found.update(_detect_entities_skipping_structural(item, key=None))
+    return sorted(found)
 
 
 def _redact_payload(payload: dict) -> tuple[dict, list[str]]:
     """Redact PII in ``payload`` (deep) and return ``(redacted_payload, entity_types_found)``.
+
+    Walks the payload dict with key-awareness: structural keys (UUIDs, hashes, enums) are
+    skipped because Presidio mis-tags them and a clobbered UUID breaks ``_row_to_event``'s
+    pydantic validation - silently dropping the event from the trace and breaking every
+    detector that reads it.
 
     Detectors continue to work because:
       * injection markers (``SYSTEM:``, ``ignore previous instructions``) are not PII so they
@@ -91,18 +144,18 @@ def _redact_payload(payload: dict) -> tuple[dict, list[str]]:
         ``password`` which the recognizers do not classify as PII either;
       * role/HMAC/budget detectors do not read content at all.
 
-    The list of entity types is small (e.g. ``["EMAIL_ADDRESS", "US_SSN"]``) and is persisted
-    alongside the payload under ``_pii_redacted`` so the scanner + UI can show "this event had
-    1 email and 1 SSN" without ever exposing the raw values.
+    The list of entity types is persisted under ``_pii_redacted`` so the scanner + UI can show
+    "this event had 1 email and 1 SSN" without exposing the raw values.
     """
     if not _REDACT_AT_REST or not payload:
         return payload, []
-    entities = detect_entities_in_value(payload)
+    entities = _detect_entities_skipping_structural(payload)
     if not entities:
         return payload, []
     r = get_redactor()
-    redacted = r.redact_dict(payload)
-    redacted["_pii_redacted"] = entities
+    redacted = _walk_and_redact(payload, r)
+    if isinstance(redacted, dict):
+        redacted["_pii_redacted"] = entities
     return redacted, entities
 
 
