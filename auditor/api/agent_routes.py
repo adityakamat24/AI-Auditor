@@ -2,26 +2,24 @@
 
 This is the *interactive* surface the demo needs:
 
-- ``POST /agent/runs`` - a reviewer/admin submits ``{task}`` from the UI; the auditor mints an mTLS
-  cert, spawns the harness subprocess in agent mode (real Claude via LiteLLM), and returns the new
-  ``run_id``. The harness streams telemetry events back over mTLS as usual; when it disconnects, the
-  existing IPC ``on_disconnect`` schedules the post-run audit (sampler → detectors → live judge → flag).
+- ``POST /agent/runs`` - a reviewer/admin submits ``{task}`` from the UI; the auditor builds a
+  :class:`auditor.harness_runner.HarnessRun` (which mints an mTLS cert, builds an allowlisted
+  child env, spawns the harness with platform-appropriate isolation, and owns the subprocess
+  lifecycle), and returns the new ``run_id``. The harness streams telemetry events back over
+  mTLS as usual; when it disconnects, the existing IPC ``on_disconnect`` schedules the post-run
+  audit (sampler → detectors → live judge → flag).
 - ``GET /agent/runs/{run_id}`` - the UI polls this to render the run as it happens: harness
   process status, events as they arrive, sampler decision, verdicts grouped by the four operator
   checks, the aggregated flag, and the auto-opened incident.
 
 This launches subprocesses from the API, which is fine for the demo / single-host dev environment;
-a production deployment would route this to a dedicated harness-launcher service.
+a production deployment would route this to a dedicated harness-launcher service. The
+:class:`HarnessRun` class is the seam that makes that future extraction cheap.
 """
 
 from __future__ import annotations
 
 import asyncio
-import os
-import subprocess
-import sys
-from datetime import UTC, datetime
-from pathlib import Path
 from typing import Annotated
 from uuid import UUID
 
@@ -32,10 +30,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from auditor.api.auth import require_role
 from auditor.api.hitl_routes import get_db_session
-from auditor.auth.ca import init_ca, mint_leaf_to_files
 from auditor.config import get_settings
 from auditor.db.models import Event, Flag, Incident, Run, SamplerDecision, Verdict
-from auditor.ids import uuid7
+from auditor.harness_runner import HarnessRun, get_run
 from auditor.verdicts.checks import CHECK_TITLES, Check, check_for_detector
 
 agent_router = APIRouter(prefix="/agent", tags=["agent"])
@@ -43,73 +40,27 @@ agent_router = APIRouter(prefix="/agent", tags=["agent"])
 # Default tenant for demo runs when the caller's JWT has no tenant_id.
 DEMO_TENANT = UUID("00000000-0000-0000-0000-000000000001")
 
-# Per-process registry of harness subprocesses (run_id → info). Survives until the auditor restarts.
-_RUNS: dict[str, dict] = {}
-_RUN_LOG_DIR = Path(".run/agent_runs")
-
 
 class AgentRunRequest(BaseModel):
     task: str = Field(min_length=1, max_length=4000)
     max_turns: int = Field(default=12, ge=1, le=30)
 
 
-def _spawn_harness(task: str, max_turns: int, tenant_id: UUID) -> dict:
-    """Mint a per-run mTLS cert, spawn the harness in agent mode, return the run info. Blocking - call
-    via :func:`asyncio.to_thread` from async handlers."""
-    settings = get_settings()
-    init_ca(settings.data_dir)
-    _RUN_LOG_DIR.mkdir(parents=True, exist_ok=True)
-
-    run_id = str(uuid7())
-    cert, key, ca = mint_leaf_to_files(
-        settings.data_dir, role="harness", run_id=run_id,
-        tenant_id=str(tenant_id), hostname="harness.local",
-    )
-
-    env = dict(os.environ)
-    env.update({
-        "HARNESS_MODE": "agent",
-        "HARNESS_TASK": task,
-        "HARNESS_MAX_TURNS": str(max_turns),
-        "HARNESS_CERT": str(cert),
-        "HARNESS_KEY": str(key),
-        "HARNESS_CA": str(ca),
-        "HARNESS_RUN_ID": run_id,
-        "HARNESS_TENANT_ID": str(tenant_id),
-        "GATE_TIMEOUT_MS": "500",
-    })
-    # Inherit the parent's IPC_MTLS_ENABLED. The local-dev path sets it to "true" via
-    # start_all.ps1 (the auditor listens on TLS-wrapped loopback TCP), so the harness uses mTLS.
-    # The cloud single-container path leaves it "false" (auditor listens on a plain Unix socket),
-    # so the harness sends plain frames. Forcing "true" here breaks the cloud path: the harness
-    # sends TLS handshake bytes into the plain socket and the auditor reads them as a malformed
-    # 369MB frame, disconnecting the harness. Don't override the parent.
-    env.setdefault("IPC_MTLS_ENABLED", os.environ.get("IPC_MTLS_ENABLED", "false"))
-
-    log_path = _RUN_LOG_DIR / f"{run_id}.log"
-    log_handle = log_path.open("w", encoding="utf-8", errors="replace")
-    proc = subprocess.Popen(  # noqa: S603 - controlled command (sys.executable + a fixed module name)
-        [sys.executable, "-m", "harness.main"],
-        env=env, stdout=log_handle, stderr=subprocess.STDOUT, cwd=os.getcwd(),
-    )
-    info = {
-        "run_id": run_id, "tenant_id": str(tenant_id), "task": task,
-        "pid": proc.pid, "started_at": datetime.now(tz=UTC).isoformat(),
-        "log_path": str(log_path), "_proc": proc, "_log_handle": log_handle,
-    }
-    _RUNS[run_id] = info
-    return info
+def _spawn_via_harness_runner(task: str, max_turns: int, tenant_id: UUID) -> HarnessRun:
+    """Construct + start a HarnessRun. Blocking; call via :func:`asyncio.to_thread`."""
+    return HarnessRun.from_request(
+        task=task,
+        max_turns=max_turns,
+        tenant_id=tenant_id,
+        data_dir=get_settings().data_dir,
+    ).start()
 
 
 def _harness_status(run_id: str) -> str:
-    """`running` while the subprocess is alive; `completed` on clean exit; `exited(N)` on non-zero."""
-    info = _RUNS.get(run_id)
-    if info is None:
-        return "unknown"
-    code = info["_proc"].poll()
-    if code is None:
-        return "running"
-    return "completed" if code == 0 else f"exited({code})"
+    """``running`` while the subprocess is alive; ``completed`` / ``exited(N)`` after; ``unknown``
+    if the run isn't in the live registry (the DB row is the source of truth from that point)."""
+    run = get_run(run_id)
+    return run.status if run is not None else "unknown"
 
 
 @agent_router.post("/runs", status_code=status.HTTP_201_CREATED)
@@ -119,12 +70,14 @@ async def start_agent_run(
 ) -> dict:
     """Launch a new agent run on the user-supplied task; returns the new ``run_id`` immediately."""
     tenant_id = UUID(claims.get("tenant_id") or str(DEMO_TENANT))
-    info = await asyncio.to_thread(_spawn_harness, body.task, body.max_turns, tenant_id)
+    run = await asyncio.to_thread(
+        _spawn_via_harness_runner, body.task, body.max_turns, tenant_id
+    )
     return {
-        "run_id": info["run_id"],
-        "tenant_id": info["tenant_id"],
-        "task": info["task"],
-        "started_at": info["started_at"],
+        "run_id": run.run_id,
+        "tenant_id": str(run.tenant_id),
+        "task": run.task,
+        "started_at": run.started_at.isoformat() if run.started_at else None,
     }
 
 
@@ -141,7 +94,7 @@ async def get_agent_run(
         raise HTTPException(status_code=400, detail="invalid run_id") from exc
 
     run = await session.get(Run, run_uuid)
-    if run is None and run_id not in _RUNS:
+    if run is None and get_run(run_id) is None:
         raise HTTPException(status_code=404, detail="run not found")
 
     events = (await session.execute(
